@@ -83,7 +83,7 @@ try
             num_search_pages = 60;
             url_list = {};
             offset = 0;
-            h = waitbar(0,['Extracting list and links to papers with keyword: ',main_keyword_searchengine]);
+            h = waitbar(0,{'Extracting list and links to papers with keyword: ',main_keyword_searchengine});
             set(h,'Position', [500 300 500 50]);
 
             for p = 1:num_search_pages 
@@ -111,7 +111,9 @@ try
 
                         url_link_i = ['https://www.sciencedirect.com/science',add_port];
                         url_list = [url_list;url_link_i];
-                        waitbar(p/num_search_pages,h,sprintf('%s',['ScienceDirect page: ' num2str(num_search_pages)]))
+                        waitbar(p/num_search_pages,h,...
+                            {['Keyword combination = ',num2str(k),' out of ',num2str(numel(main_keyword_searchengine_raw_multiple))],...
+                            ['ScienceDirect page: ', num2str(p),' out of ',num2str(num_search_pages)]});
                     end
                     offset = show * p;
                 catch
