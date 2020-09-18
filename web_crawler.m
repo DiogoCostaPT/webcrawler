@@ -83,8 +83,8 @@ try
             num_search_pages = 60;
             url_list = {};
             offset = 0;
-            h = waitbar(0,{'Extracting list and links to papers with keyword: ',main_keyword_searchengine});
-            set(h,'Position', [500 300 500 50]);
+            h = waitbar(0,'Extracting list of papers...');
+            set(h,'Position', [500 300 280 70]);
 
             for p = 1:num_search_pages 
 
