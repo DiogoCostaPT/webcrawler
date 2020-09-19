@@ -2,7 +2,7 @@
 % Options
 
 % 1
-search_engine_retrive_list_of_papers_and_urls = 1;  % carefull -> it will send requests to Science-Direct server
+search_engine_retrive_list_of_papers_and_urls = 0;  % carefull -> it will send requests to Science-Direct server
 by_country = 1; % will only take the first entry of main_keyword_searchengine_raw_multiple and add the country names
 
 %{
@@ -36,7 +36,7 @@ extractstring = 'x0x22permafrost0x220x2520AND0x2520';
 %extractstring = 'x0x22groudwater0x220x2520AND0x2520';
                                           
 % 2                                    
-request_server_papers_in_list_save_htmls = 0; % carefull -> it will send requests to Science-Direct server
+request_server_papers_in_list_save_htmls = 1; % carefull -> it will send requests to Science-Direct server
 
 % 3
 extract_papers_info = 0; 
@@ -53,7 +53,6 @@ plot_maps = 0;
 
 
 
-
 %% If analysis by country
 if by_country
    
@@ -65,295 +64,344 @@ mkdir('papers');
 dir4search = ['papers/',folder_name_to_store_results];
 mkdir(dir4search);
 
-try
-    h = waitbar(0,'Extracting list of papers...');
-    set(h,'Position', [500 300 280 70]);
-            
-    for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
-        main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
-
-        %%
-        main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
-
-        folderpapers = ['papers/',main_keyword_searchengine];
-
-        %% Extract list of papers with keyword
-        if search_engine_retrive_list_of_papers_and_urls
+num_search_pages = 60;
+show = 100;
 
 
-            show = 100;
-            num_search_pages = 60;
-            url_list = {};
-            offset = 0;         
+%
+pausetime = 10; % CAREFULL, DON'T PUT THIS LOWER THAN 10
 
-            for p = 1:num_search_pages 
-                
-                waitbar(p/num_search_pages,h,...
-                                {['Keyword combination = ',num2str(k),' out of ',num2str(numel(main_keyword_searchengine_raw_multiple))],...
-                                ['ScienceDirect page: ', num2str(p),' out of ',num2str(num_search_pages)]});
-                            
-                if ~isempty(url_list_s) || p==1
-                  
-                    try
+%% EXTRACT LIST OF PAPERS
+if search_engine_retrive_list_of_papers_and_urls
 
-                        url_query = ['https://www.sciencedirect.com/search/advanced?tak=',main_keyword_searchengine,'&show=',num2str(show),'&offset=',num2str(offset)];
-                        html_raw = webread(url_query);
-                        pause(10);
+h = waitbar(0,'Extracting list of papers (STEP 1)');
+set(h,'Position', [500 300 280 70]);
 
-                        start_key = 'href="/science/';
-                        url_list_s = strfind(html_raw,start_key) + numel(start_key)-1;
+for k = 1:numel(main_keyword_searchengine_raw_multiple)
+
+    main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
+    main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
+
+        url_list = {};
+        offset = 0;         
+
+        for p = 1:num_search_pages 
+
+            waitbar(p/num_search_pages,h,...
+                            {'Extracting list of papers (STEP 1)',...
+                            ['Keyword combination = ',num2str(k),' out of ',num2str(numel(main_keyword_searchengine_raw_multiple))],...
+                            ['ScienceDirect page: ', num2str(p),' out of ',num2str(num_search_pages)]});
+
+            if ~isempty(url_list_s) || p==1
+
+                try
+
+                    url_query = ['https://www.sciencedirect.com/search/advanced?tak=',main_keyword_searchengine,'&show=',num2str(show),'&offset=',num2str(offset)];
+                    html_raw = webread(url_query);
+                    pause(pausetime);
+
+                    start_key = 'href="/science/';
+                    url_list_s = strfind(html_raw,start_key) + numel(start_key)-1;
 
 
-                        for i = 1:numel(url_list_s)
-                            temp = strfind(html_raw(url_list_s(i)+numel(url_list_s(i)):end),'" ');
-                            url_list_e = url_list_s(i)+numel(url_list_s(i)) + temp(1) - 2;
-                            add_port = html_raw(url_list_s(i):url_list_e);
+                    for i = 1:numel(url_list_s)
+                        temp = strfind(html_raw(url_list_s(i)+numel(url_list_s(i)):end),'" ');
+                        url_list_e = url_list_s(i)+numel(url_list_s(i)) + temp(1) - 2;
+                        add_port = html_raw(url_list_s(i):url_list_e);
 
-                            if contains(add_port,'https')
-                                continue
-                            end
-
-                            url_link_i = ['https://www.sciencedirect.com/science',add_port];
-                            url_list = [url_list;url_link_i];
-                            
+                        if contains(add_port,'https')
+                            continue
                         end
-                        offset = show * p;
-                    catch
-                        disp('> No more pages to search')
-                        break;
+
+                        url_link_i = ['https://www.sciencedirect.com/science',add_port];
+                        url_list = [url_list;url_link_i];
+
                     end
+                    offset = show * p;
+                catch
+                    disp('> No more pages to search')
+                    break;
                 end
-                
             end
+
+        end
+
+        if ~isempty(url_list)
             new_dir = [dir4search,'/',main_keyword_searchengine];   
             mkdir(new_dir);
             filesave_name = [new_dir,'/href_list'];
             save(filesave_name,'url_list');
-
         end
 
-        % Extract html
-        if request_server_papers_in_list_save_htmls 
-
-            matfilename = [filesave_name,'.mat']; 
-            load(matfilename);
-            options = weboptions('ContentType','text','RequestMethod','get');
-            h = waitbar(0,'Saving papers html...');
-            url_link_clean = {};
-            %mkdir(folderpapers);
-            files_list_raw = dir(folderpapers);
-            files_list = {files_list_raw.name};
-            fd = fopen('webcrawler.log','w');
-            for  i = 1:1:numel(url_list)
-
-                url_link = url_list{i};
-                code_loc = strfind(url_link,'/');
-                filename = url_link(code_loc(end)+1:end);
-                exists_paper = ~isempty(find(contains(files_list,[filename,'.mat'])==1));
-                isjournalref = contains(url_link,'/journal/');
-                isnotpaper = contains(url_link,'.pdf');
-                isrefworks = contains(url_link,'/referenceworks/');
-                isbookseries = contains(url_link,'/bookseries/');
-                isbook = contains(url_link,'/book/');
-
-                if exists_paper
-                   url_link_clean = [url_link_clean,url_link];
-                   msg = ['> Saved: ',url_link];
-                   formatid = ['%s',num2str(numel(msg)),'\n'];
-                   disp(msg); 
-                   fprintf(fd,formatid,msg);
-                elseif isjournalref || isnotpaper || isrefworks || isbookseries || isbook
-                   msg = ['> ERR: Not a paper page (excluded): ',url_link];
-                   formatid = ['%s',num2str(numel(msg)),'\n'];
-                   disp(msg); 
-                   fprintf(fd,formatid,msg);
-                else
-                    try
-                        pause(20);
-                        html_data = webread(url_link,options);              
-                        title_name = extractBetween(html_data,'<meta name="citation_title" content="','" />');
-                        if ~isempty(title_name)
-                            url_link_clean = [url_link_clean,url_link];
-                            save([new_dir,'/',filename],'html_data');
-                            msg = ['> Saved: ',url_link];
-                            formatid = ['%s',num2str(numel(msg)),'\n'];
-                           disp(msg); 
-                           fprintf(fd,formatid,msg);
-                        else
-                            msg = ['> ERR: Not a paper page (excluded): ',url_link];
-                            formatid = ['%s',num2str(numel(msg)),'\n'];
-                           disp(msg); 
-                           fprintf(fd,formatid,msg);
-                        end
-                    catch
-                        msg = ['> ERR: Server returned error: ',url_link];
-                        formatid = ['%s',num2str(numel(msg)),'\n'];
-                        disp(msg); 
-                        fprintf(fd,formatid,msg);
-                    end
-                end
-                waitbar(i/numel(url_list))
-
-            end
-            close(h)
-            fclose(fd);
-
-        end
-
-        %% Extract paper info
-        if extract_papers_info
-            
-            if k == 1
-                if by_country
-                    addwordi = "_by_country";
-                else
-                    addwordi = '';
-                end
-                try
-                   matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},addwordi,'.mat'];
-                   load(matfile);
-                   extract_papers_info = 0; % no need to extract again
-                   disp(['Err: ',matfile,' file already exists -> no need to run again the extract_papers_info function'])
-                   enter_1 = 0;
-                catch
-                   enter_1 = 1;
-                end
-            end
-            
-            if enter_1
-                metadata = {};
-                if k == 1
-                    metadata_all = {};
-                end
-                h = waitbar(0,'Extracting metadata for all papers...');
-                db_i =  strrep(main_keyword_searchengine_raw_multiple{k},' ','%20');
-                dir_db = ['papers/',db_i];
-                list_papers_raw = dir(dir_db);
-
-                list_papers = {list_papers_raw.name};
-
-                for i = 1:1:numel(list_papers)
-
-                    list_papers_i = list_papers{i};
-
-                    metadata_i = article_data_extract(dir_db,list_papers_i);
-                    if ~isempty(metadata_i)
-                        metadata = [metadata;metadata_i]; 
-                    end  
-                    waitbar(i/numel(list_papers))
-                end
-                if ~isempty(metadata)
-                    if contains(db_i,'%20AND%20')
-                        db_i = extractAfter(db_i,'%20AND%20');               
-                    end
-                    metadata_all.(genvarname(db_i)) = metadata;
-                end
-                close(h)
-            end
-                        
-        end
-
-        %% Process results
-        if plot_paper_info_by_folder
-
-            try
-               matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},'.mat'];
-               load(matfile);
-            catch
-                flag1 = exist('metadata_all');
-                if flag1 == 0
-                    disp(['Err: ',matfile,' file not found -> need to run first the extract_papers_info function'])
-                    enter_2 = 0;
-                else
-                    enter_2 = 1;
-                end
-            end
-            
-            db_names = fieldnames(metadata_all);
-            db_name_i = db_names{k};
-            metadata = metadata_all.(genvarname(db_name_i))
-
-            metadata_all_processed = {};
-            if isempty(filter_papers_keywords)
-                metadata_all_processed = metadata;
-            else
-                metadata_all_processed = find_subset_of_papers(metadata,filter_papers_keywords);
-            end
-
-            % Year
-            year_data = str2double([metadata_all_processed{:,2}]);
-            year_data_unique = unique(year_data);
-            year_data_unique(year_data_unique == 9999) = [];
-            figure
-            hist(year_data,numel(year_data_unique));
-            h1 = findobj(gca,'Type','patch');
-            set(h1,'FaceColor',[0.5 0.5 0.5],'EdgeColor','k')
-            grid on
-            title(['Publication year (',db_name_i,')'])
-            ylabel('# of publications')
-
-            % Journal  
-            journals_all = [metadata_all_processed{:,3}];
-            [C,ia,ic] = unique(journals_all);
-            a_counts = accumarray(ic,1);
-            tabl1 = table(C',a_counts);
-            tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
-            tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
-            figure
-            wordcloud(tabl1,'Var1','a_counts')
-            title(['Main Journals (',db_name_i,')'])
-
-            % Type of paper
-            [uni,~,idx] = unique([metadata_all_processed{:,4}]');
-            figure
-            hist(idx,unique(idx))
-            h3 = findobj(gca,'Type','patch');
-            set(h3,'FaceColor',[0.5 0.5 0.5],'EdgeColor','k')
-            set(gca,'xtick',[1:numel(uni)],'xticklabel',uni)
-            xtickangle(65)
-            grid on
-            title(['Type of paper (',db_name_i,')'])
-            ylabel('# of publications')
-
-            % Keywords
-            keywords_all = [metadata_all_processed{:,6}];
-            keywords_all_clean = remove_longchar_entries(keywords_all);
-            [C,ia,ic] = unique(keywords_all_clean);
-            a_counts = accumarray(ic,1);
-            tabl1 = table(C',a_counts);
-            tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
-            tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
-            figure
-            wordcloud(tabl1,'Var1','a_counts')
-            title(['Main Keywords (',db_name_i,')'])
-
-            % Authors
-            %authors_all = [metadata_all_processed{:,5}];
-            %[C,ia,ic] = unique(authors_all);
-            %a_counts = accumarray(ic,1);
-            %tabl1 = table(C',a_counts);
-            %tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
-            %tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
-            %figure
-            %wordcloud(tabl1,'Var1','a_counts')
-            %title(['Main Authors (',db_name_i,')'])
-        end
-    
-    end
+end
     close(h)
-catch
-    
 end
 
-if extract_papers_info
+
+%% EXTRACT HTML
+if request_server_papers_in_list_save_htmls 
+
+h = waitbar(0,'Extracting papers from lists - HTML (STEP 2)');
+set(h,'Position', [500 300 280 70]);
+
+fd = fopen('webcrawler.log','w');
+for k = 1:numel(main_keyword_searchengine_raw_multiple)
+
+    main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
+    main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
+    
+    new_dir = [dir4search,'/',main_keyword_searchengine];   
+
+    matfilename = [new_dir,'/href_list.mat'];
+
+    try
+        load(matfilename);
+        options = weboptions('ContentType','text','RequestMethod','get');
+       
+        url_link_clean = {};
+        %mkdir(folderpapers);
+        files_list_raw = dir(new_dir);
+        files_list = {files_list_raw.name};
+        
+        for  i = 1:1:numel(url_list)
+
+            url_link = url_list{i};
+            code_loc = strfind(url_link,'/');
+            filename = url_link(code_loc(end)+1:end);
+            exists_paper = ~isempty(find(contains(files_list,[filename,'.mat'])==1));
+            isjournalref = contains(url_link,'/journal/');
+            isnotpaper = contains(url_link,'.pdf');
+            isrefworks = contains(url_link,'/referenceworks/');
+            isbookseries = contains(url_link,'/bookseries/');
+            isbook = contains(url_link,'/book/');
+
+            if exists_paper
+               url_link_clean = [url_link_clean,url_link];
+               msg = ['> Saved: ',url_link];
+               formatid = ['%s',num2str(numel(msg)),'\n'];
+               disp(msg); 
+               fprintf(fd,formatid,msg);
+            elseif isjournalref || isnotpaper || isrefworks || isbookseries || isbook
+               msg = ['> ERR: Not a paper page (excluded): ',url_link];
+               formatid = ['%s',num2str(numel(msg)),'\n'];
+               disp(msg); 
+               fprintf(fd,formatid,msg);
+            else
+                try
+                    pause(pausetime);
+                    html_data = webread(url_link,options);              
+                    title_name = extractBetween(html_data,'<meta name="citation_title" content="','" />');
+                    if ~isempty(title_name)
+                        url_link_clean = [url_link_clean,url_link];
+                        save([new_dir,'/',filename],'html_data');
+                        msg = ['> Saved: ',url_link];
+                        formatid = ['%s',num2str(numel(msg)),'\n'];
+                       disp(msg); 
+                       fprintf(fd,formatid,msg);
+                    else
+                        msg = ['> ERR: Not a paper page (excluded): ',url_link];
+                        formatid = ['%s',num2str(numel(msg)),'\n'];
+                       disp(msg); 
+                       fprintf(fd,formatid,msg);
+                    end
+                catch
+                    msg = ['> ERR: Server returned error: ',url_link];
+                    formatid = ['%s',num2str(numel(msg)),'\n'];
+                    disp(msg); 
+                    fprintf(fd,formatid,msg);
+                end
+            end
+            waitbar(i/numel(url_list),h,...
+                            {'Extracting papers from lists - HTML (STEP 2)',...
+                            ['Keyword combination = ',num2str(k),' out of ',num2str(numel(main_keyword_searchengine_raw_multiple))],...
+                            ['Paper: ', num2str(i),' out of ',num2str(numel(url_list))]});
+
+        end
+        fclose(fd);
+        
+    catch
+         msg = ['> ERR: file not found: ',matfilename];
+        formatid = ['%s',num2str(numel(msg)),'\n'];
+        disp(msg); 
+        fprintf(fd,formatid,msg);
+    end
+
+    end
+    close(h)
+end
+
+    %% Extract paper info
+    if extract_papers_info
+
+    h = waitbar(0,'Extracting list of papers...');
+    set(h,'Position', [500 300 280 70]);
+
+    for k = 1:numel(main_keyword_searchengine_raw_multiple)
+
+    main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
+    main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
+    folderpapers = ['papers/',main_keyword_searchengine];
+
+        if k == 1
+            if by_country
+                addwordi = "_by_country";
+            else
+                addwordi = '';
+            end
+            try
+               matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},addwordi,'.mat'];
+               load(matfile);
+               extract_papers_info = 0; % no need to extract again
+               disp(['Err: ',matfile,' file already exists -> no need to run again the extract_papers_info function'])
+               enter_1 = 0;
+            catch
+               enter_1 = 1;
+            end
+        end
+
+        if enter_1
+            metadata = {};
+            if k == 1
+                metadata_all = {};
+            end
+            h = waitbar(0,'Extracting metadata for all papers...');
+            db_i =  strrep(main_keyword_searchengine_raw_multiple{k},' ','%20');
+            dir_db = ['papers/',db_i];
+            list_papers_raw = dir(dir_db);
+
+            list_papers = {list_papers_raw.name};
+
+            for i = 1:1:numel(list_papers)
+
+                list_papers_i = list_papers{i};
+
+                metadata_i = article_data_extract(dir_db,list_papers_i);
+                if ~isempty(metadata_i)
+                    metadata = [metadata;metadata_i]; 
+                end  
+                waitbar(i/numel(list_papers))
+            end
+            if ~isempty(metadata)
+                if contains(db_i,'%20AND%20')
+                    db_i = extractAfter(db_i,'%20AND%20');               
+                end
+                metadata_all.(genvarname(db_i)) = metadata;
+            end
+            close(h)
+        end
+
     if by_country
         addwordi = '_by_country';
     else
         addwordi = '';
     end
    save(['metadata_all_',main_keyword_searchengine_raw_multiple{1},addwordi,'.mat'],'metadata_all'); 
+
+    end
+    close(h)
+
+    end
+
+    %% Process results
+    if plot_paper_info_by_folder
+
+h = waitbar(0,'Extracting list of papers...');
+set(h,'Position', [500 300 280 70]);
+
+for k = 1:numel(main_keyword_searchengine_raw_multiple)
+
+    main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
+    main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
+    folderpapers = ['papers/',main_keyword_searchengine];
+
+        try
+           matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},'.mat'];
+           load(matfile);
+        catch
+            flag1 = exist('metadata_all');
+            if flag1 == 0
+                disp(['Err: ',matfile,' file not found -> need to run first the extract_papers_info function'])
+                enter_2 = 0;
+            else
+                enter_2 = 1;
+            end
+        end
+
+        db_names = fieldnames(metadata_all);
+        db_name_i = db_names{k};
+        metadata = metadata_all.(genvarname(db_name_i))
+
+        metadata_all_processed = {};
+        if isempty(filter_papers_keywords)
+            metadata_all_processed = metadata;
+        else
+            metadata_all_processed = find_subset_of_papers(metadata,filter_papers_keywords);
+        end
+
+        % Year
+        year_data = str2double([metadata_all_processed{:,2}]);
+        year_data_unique = unique(year_data);
+        year_data_unique(year_data_unique == 9999) = [];
+        figure
+        hist(year_data,numel(year_data_unique));
+        h1 = findobj(gca,'Type','patch');
+        set(h1,'FaceColor',[0.5 0.5 0.5],'EdgeColor','k')
+        grid on
+        title(['Publication year (',db_name_i,')'])
+        ylabel('# of publications')
+
+        % Journal  
+        journals_all = [metadata_all_processed{:,3}];
+        [C,ia,ic] = unique(journals_all);
+        a_counts = accumarray(ic,1);
+        tabl1 = table(C',a_counts);
+        tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
+        tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
+        figure
+        wordcloud(tabl1,'Var1','a_counts')
+        title(['Main Journals (',db_name_i,')'])
+
+        % Type of paper
+        [uni,~,idx] = unique([metadata_all_processed{:,4}]');
+        figure
+        hist(idx,unique(idx))
+        h3 = findobj(gca,'Type','patch');
+        set(h3,'FaceColor',[0.5 0.5 0.5],'EdgeColor','k')
+        set(gca,'xtick',[1:numel(uni)],'xticklabel',uni)
+        xtickangle(65)
+        grid on
+        title(['Type of paper (',db_name_i,')'])
+        ylabel('# of publications')
+
+        % Keywords
+        keywords_all = [metadata_all_processed{:,6}];
+        keywords_all_clean = remove_longchar_entries(keywords_all);
+        [C,ia,ic] = unique(keywords_all_clean);
+        a_counts = accumarray(ic,1);
+        tabl1 = table(C',a_counts);
+        tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
+        tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
+        figure
+        wordcloud(tabl1,'Var1','a_counts')
+        title(['Main Keywords (',db_name_i,')'])
+
+        % Authors
+        %authors_all = [metadata_all_processed{:,5}];
+        %[C,ia,ic] = unique(authors_all);
+        %a_counts = accumarray(ic,1);
+        %tabl1 = table(C',a_counts);
+        %tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
+        %tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
+        %figure
+        %wordcloud(tabl1,'Var1','a_counts')
+        %title(['Main Authors (',db_name_i,')'])
 end
+close(h)
+    end
+    
+
+
 
 %%
 if plot_maps
