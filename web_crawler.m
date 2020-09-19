@@ -66,6 +66,9 @@ dir4search = ['papers/',folder_name_to_store_results];
 mkdir(dir4search);
 
 try
+    h = waitbar(0,'Extracting list of papers...');
+    set(h,'Position', [500 300 280 70]);
+            
     for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
         main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
@@ -82,46 +85,47 @@ try
             show = 100;
             num_search_pages = 60;
             url_list = {};
-            offset = 0;
-            h = waitbar(0,'Extracting list of papers...');
-            set(h,'Position', [500 300 280 70]);
+            offset = 0;         
 
             for p = 1:num_search_pages 
+                
+                waitbar(p/num_search_pages,h,...
+                                {['Keyword combination = ',num2str(k),' out of ',num2str(numel(main_keyword_searchengine_raw_multiple))],...
+                                ['ScienceDirect page: ', num2str(p),' out of ',num2str(num_search_pages)]});
+                            
+                if ~isempty(url_list_s) || p==1
+                  
+                    try
 
-                pause(10);
-                try
-                    url_query = ['https://www.sciencedirect.com/search/advanced?tak=',main_keyword_searchengine,'&show=',num2str(show),'&offset=',num2str(offset)];
-                    html_raw = webread(url_query);
+                        url_query = ['https://www.sciencedirect.com/search/advanced?tak=',main_keyword_searchengine,'&show=',num2str(show),'&offset=',num2str(offset)];
+                        html_raw = webread(url_query);
+                        pause(10);
 
-                    start_key = 'href="/science/';
-                    url_list_s = strfind(html_raw,start_key) + numel(start_key)-1;
-                    
-                    if isempty(url_list_s)
+                        start_key = 'href="/science/';
+                        url_list_s = strfind(html_raw,start_key) + numel(start_key)-1;
+
+
+                        for i = 1:numel(url_list_s)
+                            temp = strfind(html_raw(url_list_s(i)+numel(url_list_s(i)):end),'" ');
+                            url_list_e = url_list_s(i)+numel(url_list_s(i)) + temp(1) - 2;
+                            add_port = html_raw(url_list_s(i):url_list_e);
+
+                            if contains(add_port,'https')
+                                continue
+                            end
+
+                            url_link_i = ['https://www.sciencedirect.com/science',add_port];
+                            url_list = [url_list;url_link_i];
+                            
+                        end
+                        offset = show * p;
+                    catch
+                        disp('> No more pages to search')
                         break;
                     end
-
-                    for i = 1:numel(url_list_s)
-                        temp = strfind(html_raw(url_list_s(i)+numel(url_list_s(i)):end),'" ');
-                        url_list_e = url_list_s(i)+numel(url_list_s(i)) + temp(1) - 2;
-                        add_port = html_raw(url_list_s(i):url_list_e);
-
-                        if contains(add_port,'https')
-                            continue
-                        end
-
-                        url_link_i = ['https://www.sciencedirect.com/science',add_port];
-                        url_list = [url_list;url_link_i];
-                        waitbar(p/num_search_pages,h,...
-                            {['Keyword combination = ',num2str(k),' out of ',num2str(numel(main_keyword_searchengine_raw_multiple))],...
-                            ['ScienceDirect page: ', num2str(p),' out of ',num2str(num_search_pages)]});
-                    end
-                    offset = show * p;
-                catch
-                    disp('> No more pages to search')
-                    break;
                 end
+                
             end
-            close(h)
             new_dir = [dir4search,'/',main_keyword_searchengine];   
             mkdir(new_dir);
             filesave_name = [new_dir,'/href_list'];
@@ -335,8 +339,9 @@ try
             %wordcloud(tabl1,'Var1','a_counts')
             %title(['Main Authors (',db_name_i,')'])
         end
-
+    
     end
+    close(h)
 catch
     
 end
