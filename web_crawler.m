@@ -3,7 +3,7 @@
 
 % 1
 search_engine_retrive_list_of_papers_and_urls = 0;  % carefull -> it will send requests to Science-Direct server
-by_country = 1; % will only take the first entry of main_keyword_searchengine_raw_multiple and add the country names
+by_country = 0; % will only take the first entry of main_keyword_searchengine_raw_multiple and add the country names
 
 %{
 main_keyword_searchengine_raw_multiple = {'"climate change"';
@@ -16,24 +16,22 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
 %                                           '"climate change AND mitigation';
 %                                           '"climate change AND resilience';
 %                                           '"climate change AND temperture'
-                                          };
-extractstring = 'x0x22climate0x2520change0x220x2520AND0x2520';                                      
+                                  
 %}
 
-folder_name_to_store_results = 'permafrost_AND_climate_change';
-main_keyword_searchengine_raw_multiple = {'permafrost AND "climate change"'
+folder_name_to_store_results = 'great_lakes_AND_climate_change';
+main_keyword_searchengine_raw_multiple = {'"Great Lakes" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
                                           };                                  
-extractstring = 'x0x22permafrost0x220x2520AND0x2520';
 
 %main_keyword_searchengine_raw_multiple = {'%22groudwater%22';
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
                                          % };                                  
-%extractstring = 'x0x22groudwater0x220x2520AND0x2520';
+
                                           
 % 2                                    
 request_server_papers_in_list_save_htmls = 1; % carefull -> it will send requests to Science-Direct server
@@ -77,6 +75,8 @@ if search_engine_retrive_list_of_papers_and_urls
 
 h = waitbar(0,'Extracting list of papers (STEP 1)');
 set(h,'Position', [500 300 280 70]);
+
+url_list_s = '';
 
 for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
@@ -142,16 +142,19 @@ end
 %% EXTRACT HTML
 if request_server_papers_in_list_save_htmls 
 
+    
+foldernames = dir(dir4search);  
+foldernames = {foldernames.name};
+foldernames = foldernames(3:end);
+    
 h = waitbar(0,'Extracting papers from lists - HTML (STEP 2)');
 set(h,'Position', [500 300 280 70]);
 
 fd = fopen('webcrawler.log','w');
-for k = 1:numel(main_keyword_searchengine_raw_multiple)
+for k = 1:numel(foldernames)
 
-    main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
-    main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
-    
-    new_dir = [dir4search,'/',main_keyword_searchengine];   
+   
+    new_dir = [dir4search,'/',foldernames{k}];   
 
     matfilename = [new_dir,'/href_list.mat'];
 
@@ -178,7 +181,7 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
             if exists_paper
                url_link_clean = [url_link_clean,url_link];
-               msg = ['> Saved: ',url_link];
+               msg = ['> Had already been Saved: ',url_link];
                formatid = ['%s',num2str(numel(msg)),'\n'];
                disp(msg); 
                fprintf(fd,formatid,msg);
@@ -214,11 +217,11 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
             end
             waitbar(i/numel(url_list),h,...
                             {'Extracting papers from lists - HTML (STEP 2)',...
-                            ['Keyword combination = ',num2str(k),' out of ',num2str(numel(main_keyword_searchengine_raw_multiple))],...
+                            ['Keyword combination = ',num2str(k),' out of ',num2str(numel(foldernames))],...
                             ['Paper: ', num2str(i),' out of ',num2str(numel(url_list))]});
 
         end
-        fclose(fd);
+        
         
     catch
          msg = ['> ERR: file not found: ',matfilename];
@@ -227,21 +230,28 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         fprintf(fd,formatid,msg);
     end
 
-    end
+end
+    fclose(fd);
     close(h)
 end
 
     %% Extract paper info
-    if extract_papers_info
+if extract_papers_info
 
-    h = waitbar(0,'Extracting list of papers...');
-    set(h,'Position', [500 300 280 70]);
+foldernames = dir(dir4search);  
+foldernames = {foldernames.name};
+foldernames = foldernames(3:end);    
+    
+h = waitbar(0,'Extracting info from papers-html (STEP 3)');
+set(h,'Position', [500 300 280 70]);
 
-    for k = 1:numel(main_keyword_searchengine_raw_multiple)
+metadata_all_list = {};
 
-    main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
-    main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
-    folderpapers = ['papers/',main_keyword_searchengine];
+    for k = 1:numel(foldernames)
+
+    %main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
+    %main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
+    %folderpapers = ['papers/',main_keyword_searchengine];
 
         if k == 1
             if by_country
@@ -250,7 +260,7 @@ end
                 addwordi = '';
             end
             try
-               matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},addwordi,'.mat'];
+               matfile = ['metadata_all_',char(foldernames{1}),char(addwordi),'.mat'];
                load(matfile);
                extract_papers_info = 0; % no need to extract again
                disp(['Err: ',matfile,' file already exists -> no need to run again the extract_papers_info function'])
@@ -262,17 +272,20 @@ end
 
         if enter_1
             metadata = {};
-            if k == 1
-                metadata_all = {};
-            end
-            h = waitbar(0,'Extracting metadata for all papers...');
-            db_i =  strrep(main_keyword_searchengine_raw_multiple{k},' ','%20');
-            dir_db = ['papers/',db_i];
+            
+            %h = waitbar(0,'Extracting metadata for all papers...');
+            db_i =  strrep(foldernames{k},' ','%20');
+            dir_db = ['papers/',folder_name_to_store_results,'/',db_i];
             list_papers_raw = dir(dir_db);
-
+           
             list_papers = {list_papers_raw.name};
 
             for i = 1:1:numel(list_papers)
+                
+                if i == 1
+                %metadata_all_cell = {};
+                metadata_all_list = [metadata_all_list;{foldernames{k},'','','','','','','',''}];
+                end
 
                 list_papers_i = list_papers{i};
 
@@ -280,15 +293,18 @@ end
                 if ~isempty(metadata_i)
                     metadata = [metadata;metadata_i]; 
                 end  
-                waitbar(i/numel(list_papers))
+                waitbar(i/numel(list_papers),h,...
+                            {'Extracting info from papers-html (STEP 3)',...
+                            ['Keyword combination = ',num2str(k),' out of ',num2str(numel(foldernames))],...
+                            ['Paper: ', num2str(i),' out of ',num2str(numel(foldernames))]});
             end
             if ~isempty(metadata)
                 if contains(db_i,'%20AND%20')
                     db_i = extractAfter(db_i,'%20AND%20');               
                 end
-                metadata_all.(genvarname(db_i)) = metadata;
+                metadata_all_list = [metadata_all_list;[cell(numel(metadata(:,1)),1),metadata]];
             end
-            close(h)
+
         end
 
     if by_country
@@ -296,7 +312,7 @@ end
     else
         addwordi = '';
     end
-   save(['metadata_all_',main_keyword_searchengine_raw_multiple{1},addwordi,'.mat'],'metadata_all'); 
+    save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list'); 
 
     end
     close(h)
@@ -328,9 +344,9 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
             end
         end
 
-        db_names = fieldnames(metadata_all);
+        db_names = fieldnames(metadata_all_cell);
         db_name_i = db_names{k};
-        metadata = metadata_all.(genvarname(db_name_i))
+        metadata = metadata_all_cell.(genvarname(db_name_i))
 
         metadata_all_processed = {};
         if isempty(filter_papers_keywords)
@@ -415,7 +431,7 @@ if plot_maps
     end
 
     latlon = readtable('countries_lat_lon.xlsx');
-    db_names = fieldnames(metadata_all);
+    db_names = fieldnames(metadata_all_cell);
     
     latlon_cell = table2cell(latlon);
     geoinfo_a = {};
@@ -440,7 +456,7 @@ if plot_maps
             
             countname_found = [countname_found,countname];
             
-            metadata_i = metadata_all.(genvarname(db_name_i));
+            metadata_i = metadata_all_cell.(genvarname(db_name_i));
             
             % Coordinats
             lat_i = latlon_cell{iloc,2};
@@ -534,7 +550,7 @@ if plot_maps
 
                 countname_found = [countname_found,countname];
 
-                metadata_i = metadata_all.(genvarname(db_name_i));
+                metadata_i = metadata_all_cell.(genvarname(db_name_i));
 
                 % Coordinats
                 lat_i = latlon_cell{iloc,2};
