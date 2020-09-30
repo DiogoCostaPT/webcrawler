@@ -19,8 +19,8 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
                                   
 %}
 
-folder_name_to_store_results = 'great_lakes_AND_climate_change';
-main_keyword_searchengine_raw_multiple = {'"Great Lakes" AND "climate change"'
+folder_name_to_store_results = 'nutrients_AND_climate_change';
+main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
@@ -34,19 +34,19 @@ main_keyword_searchengine_raw_multiple = {'"Great Lakes" AND "climate change"'
 
                                           
 % 2                                    
-request_server_papers_in_list_save_htmls = 1; % carefull -> it will send requests to Science-Direct server
+request_server_papers_in_list_save_htmls = 0; % carefull -> it will send requests to Science-Direct server
 
 % 3
 extract_papers_info = 0; 
 
 % 4
-plot_paper_info_by_folder = 0; %1) # papers and keywords
+plot_paper_info_by_folder = 1; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercury','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
 % 5
-plot_maps = 0;
+plot_maps = 1;
 
 
 
@@ -145,7 +145,8 @@ if request_server_papers_in_list_save_htmls
     
 foldernames = dir(dir4search);  
 foldernames = {foldernames.name};
-foldernames = foldernames(3:end);
+foldernames(strcmp(foldernames,'.')) = [];
+foldernames(strcmp(foldernames,'..')) = [];
     
 h = waitbar(0,'Extracting papers from lists - HTML (STEP 2)');
 set(h,'Position', [500 300 280 70]);
@@ -153,7 +154,7 @@ set(h,'Position', [500 300 280 70]);
 fd = fopen('webcrawler.log','w');
 for k = 1:numel(foldernames)
 
-   
+    
     new_dir = [dir4search,'/',foldernames{k}];   
 
     matfilename = [new_dir,'/href_list.mat'];
@@ -240,7 +241,8 @@ if extract_papers_info
 
 foldernames = dir(dir4search);  
 foldernames = {foldernames.name};
-foldernames = foldernames(3:end);    
+foldernames(strcmp(foldernames,'.')) = [];
+foldernames(strcmp(foldernames,'..')) = [];
     
 h = waitbar(0,'Extracting info from papers-html (STEP 3)');
 set(h,'Position', [500 300 280 70]);
@@ -284,7 +286,7 @@ metadata_all_list = {};
                 
                 if i == 1
                 %metadata_all_cell = {};
-                metadata_all_list = [metadata_all_list;{foldernames{k},'','','','','','','',''}];
+                metadata_all_list = [metadata_all_list;{foldernames{k},'-','-','-','-','-','-','-','-'}];
                 end
 
                 list_papers_i = list_papers{i};
@@ -313,7 +315,20 @@ metadata_all_list = {};
         addwordi = '';
     end
     save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list'); 
-
+    metadata_all_list_table = cell2table(metadata_all_list);
+    metadata_all_list_table.Properties.VariableNames = {'Search Keys',...
+                                                        'Paper title',...
+                                                        'Year',...
+                                                        'Journal name',...
+                                                        'Type of Publication',...
+                                                        'Authors',...
+                                                        'Keywords',...
+                                                        'Abstract',...
+                                                        'Highlights',...
+                                                        };
+    
+    writetable(metadata_all_list_table,[dir4search,'/metadata_all_list',addwordi,'.csv'],'Delimiter',';'); 
+    
     end
     close(h)
 
@@ -327,13 +342,14 @@ set(h,'Position', [500 300 280 70]);
 
 for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
-    main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
-    main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
-    folderpapers = ['papers/',main_keyword_searchengine];
+    foldernames = dir(dir4search);  
+    foldernames = {foldernames.name};
+    foldernames(strcmp(foldernames,'.')) = [];
+    foldernames(strcmp(foldernames,'..')) = [];
 
         try
-           matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},'.mat'];
-           load(matfile);
+           csvfile = [dir4search,'/metadata_all_list.csv'];
+           metadata_all_list_table = readtable(csvfile);
         catch
             flag1 = exist('metadata_all');
             if flag1 == 0
@@ -344,42 +360,43 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
             end
         end
 
-        db_names = fieldnames(metadata_all_cell);
-        db_name_i = db_names{k};
-        metadata = metadata_all_cell.(genvarname(db_name_i))
+        %db_names = fieldnames(metadata_all_list);
+        %db_name_i = db_names{k};
+        %metadata = metadata_all_cell.(genvarname(db_name_i))
 
-        metadata_all_processed = {};
-        if isempty(filter_papers_keywords)
-            metadata_all_processed = metadata;
-        else
-            metadata_all_processed = find_subset_of_papers(metadata,filter_papers_keywords);
-        end
+        %metadata_all_processed = {};
+        %if isempty(filter_papers_keywords)
+        %    metadata_all_processed = metadata;
+        %else
+        %    metadata_all_processed = find_subset_of_papers(metadata,filter_papers_keywords);
+        %end
 
         % Year
-        year_data = str2double([metadata_all_processed{:,2}]);
+        year_data = str2double(metadata_all_list_table.Year);
         year_data_unique = unique(year_data);
         year_data_unique(year_data_unique == 9999) = [];
+        year_data_unique(isnan(year_data_unique)) = [];
         figure
         hist(year_data,numel(year_data_unique));
         h1 = findobj(gca,'Type','patch');
         set(h1,'FaceColor',[0.5 0.5 0.5],'EdgeColor','k')
         grid on
-        title(['Publication year (',db_name_i,')'])
+        title(['Publication year (Search words: ',dir4search(8:end),')'],'Interpreter', 'none');
         ylabel('# of publications')
 
         % Journal  
-        journals_all = [metadata_all_processed{:,3}];
-        [C,ia,ic] = unique(journals_all);
+        journals_all = metadata_all_list_table.JournalName;
+        [journal_list,ia,ic] = unique(journals_all);
         a_counts = accumarray(ic,1);
-        tabl1 = table(C',a_counts);
-        tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
-        tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
+        tabl1 = table(journal_list,a_counts);
+        %tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
+        %tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
         figure
-        wordcloud(tabl1,'Var1','a_counts')
-        title(['Main Journals (',db_name_i,')'])
+        wordcloud(tabl1,'journal_list','a_counts')
+        title(['Main journals (Search words:',dir4search(8:end),')']);
 
         % Type of paper
-        [uni,~,idx] = unique([metadata_all_processed{:,4}]');
+        [uni,~,idx] = unique(metadata_all_list_table.TypeOfPublication);
         figure
         hist(idx,unique(idx))
         h3 = findobj(gca,'Type','patch');
@@ -387,20 +404,30 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         set(gca,'xtick',[1:numel(uni)],'xticklabel',uni)
         xtickangle(65)
         grid on
-        title(['Type of paper (',db_name_i,')'])
+        title(['Type of paper (Search words: ',dir4search(8:end),')'],'Interpreter', 'none');
         ylabel('# of publications')
 
         % Keywords
-        keywords_all = [metadata_all_processed{:,6}];
-        keywords_all_clean = remove_longchar_entries(keywords_all);
+        keywords_all = metadata_all_list_table.Keywords;
+        keywords_all_clean = split_entries(keywords_all,',');
         [C,ia,ic] = unique(keywords_all_clean);
         a_counts = accumarray(ic,1);
         tabl1 = table(C',a_counts);
+        
+        % remove search words, otherwise those will be the main keywords
+        seach_words_cell = split_entries(main_keyword_searchengine_raw_multiple,' AND ');
+        for g=1:numel(seach_words_cell)
+            seach_words_cell_i = seach_words_cell{g};
+            remove_apostr = strfind(seach_words_cell_i,'"');
+            seach_words_cell_i(remove_apostr) = [];
+            tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, seach_words_cell_i)), :);
+        end
+        
         tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
         tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
         figure
         wordcloud(tabl1,'Var1','a_counts')
-        title(['Main Keywords (',db_name_i,')'])
+        title(['Keywords (Search words: ',dir4search(8:end),')']);
 
         % Authors
         %authors_all = [metadata_all_processed{:,5}];
@@ -467,7 +494,7 @@ if plot_maps
             
             % Keywords (find main key words for all countries)
             keywords_all = [metadata_i{:,6}];
-            keywords_all_clean = remove_longchar_entries(keywords_all);
+            keywords_all_clean = split_entries(keywords_all);
             [C,ia,ic] = unique(keywords_all_clean);
             if isempty(C)
                 continue;

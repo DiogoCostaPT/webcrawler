@@ -82,7 +82,8 @@ function metadata = article_data_extract(dir_db,list_papers_i)
             keyword_e = temp(1);
             keyword_i = html_data(keyword_s(i):keyword_s(i) + keyword_e - 2);
             keywords_i_clean = to_lowercase_and_put_singular(keyword_i); % clean up (all lower case and singular)
-            keywords = [keywords,keywords_i_clean,', '];
+            keywords = [keywords,keywords_i_clean];
+            if i~=numel(keyword_s) keywords = [keywords,', '];end
         end
     catch
         keywords = 'NOT AVAILABLE';
@@ -125,10 +126,10 @@ function metadata = article_data_extract(dir_db,list_papers_i)
       other_key = '>';
       loc = strfind(highlights_cut,other_key); 
       highlights_cut = highlights_cut(loc(1)+numel(other_key):end); 
-      other_key = '</p></dd></dl></p></div></div><div '
+      other_key = '</p></dd></dl></p></div></div><div ';
       loc = strfind(highlights_cut,other_key); 
       highlights_cut = highlights_cut(1:loc(1)-1); 
-      highlights = [];
+      highlights = {};
       look4 = 1;
       while look4==1
           try 
@@ -144,11 +145,13 @@ function metadata = article_data_extract(dir_db,list_papers_i)
              loc = strfind(highlights_cut,last_key); 
              highlights_cut = highlights_cut(loc(1)+numel(last_key):end); 
 
-              highlights = [highlights,highlights_i];
+              highlights = [highlights;highlights_i];
           catch
               look4 = 0;
           end
       end
+      
+      highlights = char(highlights);
       
       if ~isempty(highlights_cut)
           other_key = 'class="list-description"><p ';
