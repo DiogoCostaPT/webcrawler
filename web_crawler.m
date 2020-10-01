@@ -37,7 +37,8 @@ main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
 request_server_papers_in_list_save_htmls = 0; % carefull -> it will send requests to Science-Direct server
 
 % 3
-extract_papers_info = 0; 
+extract_papers_info = 1; 
+force_overwrite = 1;
 
 % 4
 plot_paper_info_by_folder = 1; %1) # papers and keywords
@@ -46,7 +47,7 @@ filter_papers_keywords = {}; % if don't want to
 %        'cation','methane','mercury','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
 % 5
-plot_maps = 1;
+plot_maps = 0;
 
 
 
@@ -255,22 +256,27 @@ metadata_all_list = {};
     %main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
     %folderpapers = ['papers/',main_keyword_searchengine];
 
-        if k == 1
-            if by_country
-                addwordi = "_by_cou0ntry";
-            else
-                addwordi = '';
-            end
-            try
-               matfile = ['metadata_all_',char(foldernames{1}),char(addwordi),'.mat'];
-               load(matfile);
-               extract_papers_info = 0; % no need to extract again
-               disp(['Err: ',matfile,' file already exists -> no need to run again the extract_papers_info function'])
-               enter_1 = 0;
-            catch
-               enter_1 = 1;
-            end
-        end
+
+    if by_country
+        addwordi = "_by_cou0ntry";
+    else
+        addwordi = '';
+    end
+    try
+       matfile = [dir4search,'/',foldernames{k},'/metadata_this_folder',addwordi,'.mat'];
+       load(matfile);
+       %extract_papers_info = 0; % no need to extract again
+       if force_overwrite == 0
+           disp(['Err: ',matfile,' file already exists -> force_overwrite not activated; skipped !'])
+           enter_1 = 0;
+       elseif force_overwrite == 1
+           disp(['Err: ',matfile,' file already exists -> force_overwrite activated; overwritten !'])
+           enter_1 = 1;
+       end
+    catch
+       enter_1 = 1;
+    end
+ 
 
         if enter_1
             metadata = {};
@@ -306,17 +312,17 @@ metadata_all_list = {};
                 end
                 add_new_dataset = [cell(numel(metadata(:,1)),1),metadata];
                 metadata_all_list = [metadata_all_list;add_new_dataset];
-                metadata_all_cell.(genvarname(foldernames{k})) = add_new_dataset;
+                add_new_dataset_to_print = add_new_dataset(:,2:end);
+                save([dir4search,'/',foldernames{k},'/metadata_this_folder',addwordi,'.mat'],'add_new_dataset_to_print'); 
             end
 
-        end
-
+        
     if by_country
         addwordi = '_by_country';
     else
         addwordi = '';
     end
-    save([dir4search,'/metadata_all_cell',addwordi,'.mat'],'metadata_all_cell'); 
+    %save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list'); 
     metadata_all_list_table = cell2table(metadata_all_list);
     metadata_all_list_table.Properties.VariableNames = {'Search Keys',...
                                                         'Paper title',...
@@ -331,6 +337,7 @@ metadata_all_list = {};
     
     writetable(metadata_all_list_table,[dir4search,'/metadata_all_list',addwordi,'.csv'],'Delimiter',';'); 
     
+        end
     end
     close(h)
 
@@ -458,15 +465,15 @@ if plot_maps
     foldernames(strcmp(foldernames,'..')) = [];
     foldernames_firstgeneral = foldernames{1};
     
-    try
+    %try
         %matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},'_by_country.mat'];
         %load(matfile);
-        csvfile = [dir4search,'/metadata_all_list.csv'];
-        metadata_all_list_table = readtable(csvfile);
-    catch
-        disp(['Err: ',[dir4search,'/metadata_all_list.csv'],' file not found -> need to run first the extract_papers_info function'])
-        return;
-    end
+    %    csvfile = [dir4search,'/metadata_all_list.csv'];
+    %    metadata_all_list_table = readtable(csvfile);
+    %catch
+    %    disp(['Err: ',[dir4search,'/metadata_all_list.csv'],' file not found -> need to run first the extract_papers_info function'])
+    %    return;
+    %end
 
     latlon = readtable('countries_lat_lon.xlsx');
     %db_names = fieldnames(metadata_all_cell);
@@ -488,14 +495,17 @@ if plot_maps
         countname = db_name_i;
         countname = strrep(countname,foldernames_firstgeneral,'');
         countname = strrep(countname,'%20AND%20','');
-        
+        countname = strrep(countname,'%20',' ');
+                
         iloc = find(contains(latlon_cell(:,1),countname)==1);
         
         if ~isempty(countname) && ~isempty(iloc)
             
+            load([dir4search,'/',foldernames{s},'/metadata_this_folder.mat']); 
+            
             countname_found = [countname_found,countname];
             
-            metadata_i = metadata_all_cell.(genvarname(db_name_i));
+            metadata_i = add_new_dataset_to_print;
             
             % Coordinats
             lat_i = latlon_cell{iloc,2};
@@ -505,8 +515,8 @@ if plot_maps
             numpaper = numel(metadata_i(:,1));
             
             % Keywords (find main key words for all countries)
-            keywords_all = [metadata_i{:,6}];
-            keywords_all_clean = split_entries(keywords_all);
+            keywords_all = {metadata_i{:,6}};
+            keywords_all_clean = split_entries(keywords_all,',');
             [C,ia,ic] = unique(keywords_all_clean);
             if isempty(C)
                 continue;
@@ -570,7 +580,6 @@ if plot_maps
     %keywrd_pop = removekeywords();
     % now create the table with the information of # of priorities
     % Loop over the data extracted to look for information by country (WITH
-
    
     figure
     numplots = numel(keywrd_pop(:,1));
@@ -578,31 +587,38 @@ if plot_maps
     for p=1:numel(keywrd_pop(:,1))
         numplot_i = numplots - p +1;
          geoinfo_b = {};
-        for s=1:numel(db_names)
+        for s=1:numel(foldernames)
             %subplot(ceil(keywrd_pop^0.5,keywrd_pop^0.5,s))
-            db_name_i = db_names{s};
+                 
+            db_name_i = foldernames{s};
+        
             countname = db_name_i;
-            countname = strrep(countname,'0x2520',' ');
-
+            countname = strrep(countname,foldernames_firstgeneral,'');
+            countname = strrep(countname,'%20AND%20','');
+            countname = strrep(countname,'%20',' ');
+        
             iloc = find(contains(latlon_cell(:,1),countname)==1);
+            
             if ~isempty(countname) && ~isempty(iloc)
-
+                
+                load([dir4search,'/',foldernames{s},'/metadata_this_folder.mat']); 
                 countname_found = [countname_found,countname];
-
-                metadata_i = metadata_all_cell.(genvarname(db_name_i));
-
+                metadata_i = add_new_dataset_to_print;
+            
                 % Coordinats
                 lat_i = latlon_cell{iloc,2};
                 lon_i = latlon_cell{iloc,3};
 
                 keywords_all = [metadata_i{:,6}];
-
-                keywrd_pop_i = keywrd_pop{p,1};
-                iloc = find(contains(keywords_all,keywrd_pop_i)==1);
-                numpaper = numel(iloc);
-                if numpaper> 0
-                    new_entry = {countname,lat_i,lon_i,numpaper,keywrd_pop_i};
-                    geoinfo_b = [geoinfo_b;new_entry];
+                
+                if ~isempty(keywords_all)
+                    keywrd_pop_i = keywrd_pop{p,1};
+                    iloc2 = find(contains(keywords_all,keywrd_pop_i)==1);
+                    numpaper = numel(iloc2);
+                    if numpaper> 0
+                        new_entry = {countname,lat_i,lon_i,numpaper,keywrd_pop_i};
+                        geoinfo_b = [geoinfo_b;new_entry];
+                    end
                 end
                 
             end
