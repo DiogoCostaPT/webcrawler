@@ -178,7 +178,7 @@ function metadata = article_data_extract(dir_db,list_papers_i)
 end
 
 function ErrDispConsole(Param,list_papers_i)
-    errmsg = ['> ERR: Problem in "',Param,'" in ',list_papers_i];
+    errmsg = ['> WARNING: Problem in "',Param,'" in ',list_papers_i];
     disp(errmsg);
 
 end

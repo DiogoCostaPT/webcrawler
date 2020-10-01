@@ -19,18 +19,25 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
                                   
 %}
 
-folder_name_to_store_results = 'nutrients_AND_climate_change';
-main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
+%folder_name_to_store_results = 'nutrients_AND_climate_change';
+%main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-                                          };                                  
+%                                          };                                  
 
 %main_keyword_searchengine_raw_multiple = {'%22groudwater%22';
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-                                         % };                                  
+                                         % };    
+                                         
+                                         folder_name_to_store_results = 'great_lakes_AND_climate_change';
+main_keyword_searchengine_raw_multiple = {'"great lakes" AND "climate change"'
+                                          %'permafrost AND Canada';...
+                                          %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
+                                          %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
+                                          };     
 
                                           
 % 2                                    
@@ -47,7 +54,7 @@ filter_papers_keywords = {}; % if don't want to
 %        'cation','methane','mercury','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
 % 5
-plot_maps = 0;
+plot_maps = 1;
 
 
 
@@ -188,7 +195,7 @@ for k = 1:numel(foldernames)
                disp(msg); 
                fprintf(fd,formatid,msg);
             elseif isjournalref || isnotpaper || isrefworks || isbookseries || isbook
-               msg = ['> ERR: Not a paper page (excluded): ',url_link];
+               msg = ['> WARNING: Not a paper page (excluded): ',url_link];
                formatid = ['%s',num2str(numel(msg)),'\n'];
                disp(msg); 
                fprintf(fd,formatid,msg);
@@ -205,13 +212,13 @@ for k = 1:numel(foldernames)
                        disp(msg); 
                        fprintf(fd,formatid,msg);
                     else
-                        msg = ['> ERR: Not a paper page (excluded): ',url_link];
+                        msg = ['> WARNING: Not a paper page (excluded): ',url_link];
                         formatid = ['%s',num2str(numel(msg)),'\n'];
                        disp(msg); 
                        fprintf(fd,formatid,msg);
                     end
                 catch
-                    msg = ['> ERR: Server returned error: ',url_link];
+                    msg = ['> WARNING: Server returned error: ',url_link];
                     formatid = ['%s',num2str(numel(msg)),'\n'];
                     disp(msg); 
                     fprintf(fd,formatid,msg);
@@ -226,7 +233,7 @@ for k = 1:numel(foldernames)
         
         
     catch
-         msg = ['> ERR: file not found: ',matfilename];
+         msg = ['> WARNING: file not found: ',matfilename];
         formatid = ['%s',num2str(numel(msg)),'\n'];
         disp(msg); 
         fprintf(fd,formatid,msg);
@@ -267,10 +274,10 @@ metadata_all_list = {};
        load(matfile);
        %extract_papers_info = 0; % no need to extract again
        if force_overwrite == 0
-           disp(['Err: ',matfile,' file already exists -> force_overwrite not activated; skipped !'])
+           disp(['WARNING: ',matfile,' file already exists -> force_overwrite not activated; skipped !'])
            enter_1 = 0;
        elseif force_overwrite == 1
-           disp(['Err: ',matfile,' file already exists -> force_overwrite activated; overwritten !'])
+           disp(['WARNING: ',matfile,' file already exists -> force_overwrite activated; overwritten !'])
            enter_1 = 1;
        end
     catch
@@ -362,7 +369,7 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         catch
             flag1 = exist('metadata_all');
             if flag1 == 0
-                disp(['Err: ',matfile,' file not found -> need to run first the extract_papers_info function'])
+                disp(['WARNING: ',matfile,' file not found -> need to run first the extract_papers_info function'])
                 enter_2 = 0;
             else
                 enter_2 = 1;
@@ -540,17 +547,23 @@ if plot_maps
     %% PLOT MAP with Number of papers
     figure
     geoinfo_tbl = cell2table(geoinfo_a);
-    gb = geobubble(geoinfo_tbl.geoinfo_a2,geoinfo_tbl.geoinfo_a3,geoinfo_tbl.geoinfo_a4,'Title','# Papers on Climate Change')
+    gb = geobubble(geoinfo_tbl.geoinfo_a2,geoinfo_tbl.geoinfo_a3,geoinfo_tbl.geoinfo_a4)
+    title(['# Papers (Search words: ',dir4search(8:end),')']);%,'Interpreter','none')
     %title('Number of papers')
     
     % PLOT MAP with main keywords 
     %% Keywords (most popular) all together
-    remove_searchword = erase(main_keyword_searchengine_raw_multiple{1},'"');
-    keywords_popular_proc1 = keywords_popular(...
-                             find(~contains(keywords_popular(:,1),remove_searchword)==1),:); % remove climate change
-    keywords_popular_proc2 = {};
+    remove_searchwords = erase(main_keyword_searchengine_raw_multiple{1},'"');
+    remove_searchwords = split(remove_searchwords,' AND ');
+    
+    for d = 1:numel(remove_searchwords)
+        keywords_popular_proc1 = keywords_popular(...
+                             find(~contains(keywords_popular(:,1),remove_searchwords{d})==1),:); % remove climate change
+    end
+      keywords_popular_proc2 = {};
     
     % remove names of countried from keywords
+    countname_found = {};
     for w=1:numel(keywords_popular_proc1(:,1))     
         iloc = find(contains(lower(countname_found),keywords_popular_proc1(w,1))==1);  
         if isempty(iloc)
@@ -587,6 +600,7 @@ if plot_maps
     for p=1:numel(keywrd_pop(:,1))
         numplot_i = numplots - p +1;
          geoinfo_b = {};
+         countname_found = {};
         for s=1:numel(foldernames)
             %subplot(ceil(keywrd_pop^0.5,keywrd_pop^0.5,s))
                  
@@ -605,15 +619,30 @@ if plot_maps
                 countname_found = [countname_found,countname];
                 metadata_i = add_new_dataset_to_print;
             
-                % Coordinats
+                % Coordinates
                 lat_i = latlon_cell{iloc,2};
                 lon_i = latlon_cell{iloc,3};
 
-                keywords_all = [metadata_i{:,6}];
+                % Joining all keywords and removing search words
+                keywords_all = [];
+                for w = 1:numel(metadata_i(:,6))
+                    new_keyword_group = metadata_i(w,6);
+                    if ~isempty(new_keyword_group{:})
+                        % Removing search words
+                        for d = 1:numel(remove_searchwords)
+                            new_keyword_group = new_keyword_group(...
+                                     find(~contains(new_keyword_group,remove_searchwords{d})==1)); 
+                        end
+                        keywords_all = [keywords_all,new_keyword_group{:},', '];
+                    end
+                    keywords_all = strrep(keywords_all,' ,','');
+                end
+                keywords_all = keywords_all(1:end-2);
                 
+    
                 if ~isempty(keywords_all)
                     keywrd_pop_i = keywrd_pop{p,1};
-                    iloc2 = find(contains(keywords_all,keywrd_pop_i)==1);
+                    iloc2 = find(contains(split(keywords_all,', '),keywrd_pop_i)==1);
                     numpaper = numel(iloc2);
                     if numpaper> 0
                         new_entry = {countname,lat_i,lon_i,numpaper,keywrd_pop_i};
@@ -625,17 +654,19 @@ if plot_maps
         end
 
         geoinfo_tbl2 = cell2table(geoinfo_b);
-        geoinfo_tbl2.geoinfo_b5 = categorical(geoinfo_tbl2.geoinfo_b5);
-        %subplot(numsubplots,numsubplots,p)
-        subplot(6,5,p)
-        %gb2 = geobubble(geoinfo_tbl2.geoinfo_b2,geoinfo_tbl2.geoinfo_b3,geoinfo_tbl2.geoinfo_b4,geoinfo_tbl2.geoinfo_b5,'Title',keywrd_pop_i);
-        %figure
-        gb2 = geobubble(geoinfo_tbl2.geoinfo_b2,geoinfo_tbl2.geoinfo_b3,geoinfo_tbl2.geoinfo_b4,'Title',keywrd_pop_i); 
-        %gb2.BubbleColorList = hsv(num_popular_keywords_all_country_specific_results_step2);
-        gb2.LegendVisible = 'on';
-       geolimits([-65.3755824380055 78.2066372893149],...
-                [-120.817557389549 141.603209036912]);
-        %title('Number of papers')
+        if ~isempty(geoinfo_tbl2)
+            geoinfo_tbl2.geoinfo_b5 = categorical(geoinfo_tbl2.geoinfo_b5);
+            %subplot(numsubplots,numsubplots,p)
+            subplot(6,5,p)
+            %gb2 = geobubble(geoinfo_tbl2.geoinfo_b2,geoinfo_tbl2.geoinfo_b3,geoinfo_tbl2.geoinfo_b4,geoinfo_tbl2.geoinfo_b5,'Title',keywrd_pop_i);
+            %figure
+            gb2 = geobubble(geoinfo_tbl2.geoinfo_b2,geoinfo_tbl2.geoinfo_b3,geoinfo_tbl2.geoinfo_b4,'Title',keywrd_pop_i); 
+            %gb2.BubbleColorList = hsv(num_popular_keywords_all_country_specific_results_step2);
+            gb2.LegendVisible = 'on';
+           geolimits([-65.3755824380055 78.2066372893149],...
+                    [-120.817557389549 141.603209036912]);
+            %title('Number of papers')
+        end
     end
     
 end
