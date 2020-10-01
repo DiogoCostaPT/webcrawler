@@ -257,7 +257,7 @@ metadata_all_list = {};
 
         if k == 1
             if by_country
-                addwordi = "_by_country";
+                addwordi = "_by_cou0ntry";
             else
                 addwordi = '';
             end
@@ -304,7 +304,9 @@ metadata_all_list = {};
                 if contains(db_i,'%20AND%20')
                     db_i = extractAfter(db_i,'%20AND%20');               
                 end
-                metadata_all_list = [metadata_all_list;[cell(numel(metadata(:,1)),1),metadata]];
+                add_new_dataset = [cell(numel(metadata(:,1)),1),metadata];
+                metadata_all_list = [metadata_all_list;add_new_dataset];
+                metadata_all_cell.(genvarname(foldernames{k})) = add_new_dataset;
             end
 
         end
@@ -314,7 +316,7 @@ metadata_all_list = {};
     else
         addwordi = '';
     end
-    save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list'); 
+    save([dir4search,'/metadata_all_cell',addwordi,'.mat'],'metadata_all_cell'); 
     metadata_all_list_table = cell2table(metadata_all_list);
     metadata_all_list_table.Properties.VariableNames = {'Search Keys',...
                                                         'Paper title',...
@@ -342,10 +344,10 @@ set(h,'Position', [500 300 280 70]);
 
 for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
-    foldernames = dir(dir4search);  
-    foldernames = {foldernames.name};
-    foldernames(strcmp(foldernames,'.')) = [];
-    foldernames(strcmp(foldernames,'..')) = [];
+    %foldernames = dir(dir4search);  
+    %foldernames = {foldernames.name};
+    %foldernames(strcmp(foldernames,'.')) = [];
+    %foldernames(strcmp(foldernames,'..')) = [];
 
         try
            csvfile = [dir4search,'/metadata_all_list.csv'];
@@ -449,16 +451,25 @@ close(h)
 %%
 if plot_maps
     
+    
+    foldernames = dir(dir4search);  
+    foldernames = {foldernames.name};
+    foldernames(strcmp(foldernames,'.')) = [];
+    foldernames(strcmp(foldernames,'..')) = [];
+    foldernames_firstgeneral = foldernames{1};
+    
     try
-        matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},'_by_country.mat'];
-        load(matfile);
+        %matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},'_by_country.mat'];
+        %load(matfile);
+        csvfile = [dir4search,'/metadata_all_list.csv'];
+        metadata_all_list_table = readtable(csvfile);
     catch
-        disp(['Err: ',matfile,' file not found -> need to run first the extract_papers_info function'])
+        disp(['Err: ',[dir4search,'/metadata_all_list.csv'],' file not found -> need to run first the extract_papers_info function'])
         return;
     end
 
     latlon = readtable('countries_lat_lon.xlsx');
-    db_names = fieldnames(metadata_all_cell);
+    %db_names = fieldnames(metadata_all_cell);
     
     latlon_cell = table2cell(latlon);
     geoinfo_a = {};
@@ -470,15 +481,16 @@ if plot_maps
     countname_found = {};
     
     % Loop over the data extracted to look for information by country
-    for s=1:numel(db_names)
+    for s=1:numel(foldernames)
         
-        db_name_i = db_names{s};
+        db_name_i = foldernames{s};
         
         countname = db_name_i;
-        countname = strrep(countname,'0x2520',' ');
-        
+        countname = strrep(countname,foldernames_firstgeneral,'');
+        countname = strrep(countname,'%20AND%20','');
         
         iloc = find(contains(latlon_cell(:,1),countname)==1);
+        
         if ~isempty(countname) && ~isempty(iloc)
             
             countname_found = [countname_found,countname];
