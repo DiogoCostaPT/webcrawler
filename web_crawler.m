@@ -31,9 +31,9 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
                                          % };    
-                                         
-                                         folder_name_to_store_results = 'great_lakes_AND_climate_change';
-main_keyword_searchengine_raw_multiple = {'"great lakes" AND "climate change"'
+
+folder_name_to_store_results = 'nutrients_AND_climate_change';
+main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
@@ -47,14 +47,16 @@ request_server_papers_in_list_save_htmls = 0; % carefull -> it will send request
 extract_papers_info = 1; 
 force_overwrite = 1;
 
+generate_report = 1;
+
 % 4
-plot_paper_info_by_folder = 1; %1) # papers and keywords
+plot_paper_info_by_folder = 0; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercury','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
 % 5
-plot_maps = 1;
+plot_maps = 0;
 
 
 
@@ -331,11 +333,11 @@ metadata_all_list = {};
     end
     %save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list'); 
     metadata_all_list_table = cell2table(metadata_all_list);
-    metadata_all_list_table.Properties.VariableNames = {'Search Keys',...
-                                                        'Paper title',...
+    metadata_all_list_table.Properties.VariableNames = {'Search_Keys',...
+                                                        'Paper_title',...
                                                         'Year',...
-                                                        'Journal name',...
-                                                        'Type of Publication',...
+                                                        'Journal_name',...
+                                                        'Type_of_Publication',...
                                                         'Authors',...
                                                         'Keywords',...
                                                         'Abstract',...
@@ -401,7 +403,7 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         ylabel('# of publications')
 
         % Journal  
-        journals_all = metadata_all_list_table.JournalName;
+        journals_all = metadata_all_list_table.Journal_name;
         [journal_list,ia,ic] = unique(journals_all);
         a_counts = accumarray(ic,1);
         tabl1 = table(journal_list,a_counts);
@@ -412,7 +414,7 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         title(['Main journals (Search words:',dir4search(8:end),')']);
 
         % Type of paper
-        [uni,~,idx] = unique(metadata_all_list_table.TypeOfPublication);
+        [uni,~,idx] = unique(metadata_all_list_table.Type_of_Publication);
         figure
         hist(idx,unique(idx))
         h3 = findobj(gca,'Type','patch');
@@ -459,7 +461,59 @@ end
 close(h)
     end
     
-
+% Generate report
+if generate_report
+    
+     try
+           csvfile = [dir4search,'/metadata_all_list.csv'];
+           metadata_all_list_table = readtable(csvfile);
+           enter_2 = 1;
+        catch
+            flag1 = exist('metadata_all');
+            if flag1 == 0
+                disp(['WARNING: ',matfile,' file not found -> need to run first the extract_papers_info function'])
+                enter_2 = 0;
+            end
+     end
+        
+     if enter_2
+         
+         fid=fopen([dir4search,'/report.txt'],'w');
+                                               
+         h1 = waitbar(0,'Writting report...');
+         set(h1,'Position', [500 300 280 70]);
+         for i=1:numel(metadata_all_list_table(:,1))
+            paper_table_i = metadata_all_list_table(i,:);
+            
+            if ~isempty(char(paper_table_i.Search_Keys))
+                 fprintf(fid, '%s\n', '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+                 fprintf(fid, '%s\n', ['SEARCH WORDS -> ',char(paper_table_i.Search_Keys)]);
+                 fprintf(fid, '%s\n', '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+                 fprintf(fid, '%s\n',' ');
+            else
+                
+                % Paper title and year
+                writetext = [paper_table_i.Paper_title{:},' (',paper_table_i.Year{:},')'];
+                fprintf(fid, '%s\n', ['Paper_title -> ',writetext]);
+                
+                % add highlights
+                for h = 1:numel(metadata_all_list_table(1,9:end))
+                     writetext = char(metadata_all_list_table{i,8+h});
+                     writetext = strtrim(writetext);
+                     writetext = [writetext,' '];
+                     fprintf(fid, '%s', writetext);
+                end
+                fprintf(fid, '%s\n\n',' ');
+                                
+            end
+            waitbar(i/numel(metadata_all_list_table(:,1)));
+         end
+         fclose(fid);
+         close(h1)
+         
+     end
+    
+end
 
 
 %%
