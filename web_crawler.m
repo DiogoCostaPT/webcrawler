@@ -479,10 +479,24 @@ if generate_report
      if enter_2
          
          fid=fopen([dir4search,'/report.txt'],'w');
-                                               
+                  
+         % order the entries by year, but respecting the different search
+         % words
+         intervals4easchsearch = find(~cellfun(@isempty,table2cell(metadata_all_list_table(:,1))));
+         allyears = str2double(metadata_all_list_table.Year);
+         index_order = [];
+         for i=1:numel(intervals4easchsearch)-1
+             index_order = [index_order;intervals4easchsearch(i)];
+             range_i_years = allyears(intervals4easchsearch(i)+1:intervals4easchsearch(i+1)-1);
+             [range_i_years_order range_i_years_order_loc]= sort(range_i_years,'descend');
+             index_order = [index_order;intervals4easchsearch(i)+range_i_years_order_loc];
+         end
+         
+         % start report                                  
          h1 = waitbar(0,'Writting report...');
          set(h1,'Position', [500 300 280 70]);
-         for i=1:numel(metadata_all_list_table(:,1))
+         for r=1:numel(metadata_all_list_table(:,1))
+             i = index_order(r);
             paper_table_i = metadata_all_list_table(i,:);
             
             if ~isempty(char(paper_table_i.Search_Keys))
@@ -507,7 +521,7 @@ if generate_report
                 fprintf(fid, '%s\n\n',' ');
                                 
             end
-            waitbar(i/numel(metadata_all_list_table(:,1)));
+            waitbar(r/numel(metadata_all_list_table(:,1)));
          end
          fclose(fid);
          close(h1)
