@@ -520,7 +520,7 @@ if generate_report
                 
                 % Paper type, title and year
                 fprintf(fid, '%s\n', '----------------------------------------------');
-                writetext = [paper_table_i.Type_of_Publication{:},' (',paper_table_i.Year{:},')'];
+                writetext = [upper(paper_table_i.Type_of_Publication{:}),' (',paper_table_i.Year{:},')'];
                 fprintf(fid, '%s\n', writetext);
                 writetext = paper_table_i.Paper_title{:};
                 fprintf(fid, '%s\n\n', writetext);
@@ -530,10 +530,11 @@ if generate_report
                 for h = 1:numel(metadata_all_list_table(1,9:end))
                      writetext = char(metadata_all_list_table{i,8+h});
                      writetext = strtrim(writetext);
-                     writetext = [writetext,' '];
-                     fprintf(fid, '%s', writetext);
+                     if ~isempty(writetext)
+                        fprintf(fid, '%s\n', writetext);
+                     end
                 end
-                fprintf(fid, '%s\n\n','');
+                fprintf(fid, '%s\n','');
                 
                 % add abstract
                 fprintf(fid, '%s\n', 'Abstract: ');

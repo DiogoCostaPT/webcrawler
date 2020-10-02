@@ -22,7 +22,7 @@ function metadata = article_data_extract(dir_db,list_papers_i)
         
         title = extractBetween(html_data,'<meta name="citation_title" content="','" />');
     catch
-        title = 'NOT AVAILABLE';
+        title = 'not available';
         Param = 'title';
         ErrDispConsole(Param,list_papers_i);
     end
@@ -30,21 +30,21 @@ function metadata = article_data_extract(dir_db,list_papers_i)
         year = extractBetween(html_data,'<meta name="citation_publication_date" content="','" />');
         year = extractBefore(year,'/');
     catch
-        year = 'NOT AVAILABLE';
+        year = 'not available';
         Param = 'year';
         ErrDispConsole(Param,list_papers_i);
     end
     try   
         journal = extractBetween(html_data,'<meta name="citation_journal_title" content="','" />');
     catch
-        journal = 'NOT AVAILABLE';
+        journal = 'not available';
         Param = 'journal';
         ErrDispConsole(Param,list_papers_i);
     end
     try
         article_type = extractBetween(html_data,'<meta name="citation_article_type" content="','" />');
     catch
-        article_type = 'NOT AVAILABLE';
+        article_type = 'not available';
         Param = 'article_type';
         ErrDispConsole(Param,list_papers_i);
     end
@@ -67,7 +67,7 @@ function metadata = article_data_extract(dir_db,list_papers_i)
             authors_name = [authors_name,[givenname,' ',familyname],', '];
         end
     catch
-        authors_name = 'NOT AVAILABLE';
+        authors_name = 'not available';
         Param = 'authors_name';
         ErrDispConsole(Param,list_papers_i);
     end
@@ -86,7 +86,7 @@ function metadata = article_data_extract(dir_db,list_papers_i)
             if i~=numel(keyword_s) keywords = [keywords,', '];end
         end
     catch
-        keywords = 'NOT AVAILABLE';
+        keywords = 'not available';
         Param = 'keywords';
         ErrDispConsole(Param,list_papers_i);
     end
@@ -139,14 +139,14 @@ function metadata = article_data_extract(dir_db,list_papers_i)
           
           
       else
-         highlights = 'NOT AVAILABLE';
+         highlights = 'not available';
         Param = 'highlights';
          ErrDispConsole(Param,list_papers_i);
          num_highlights = 0;
       end
       
      catch
-        highlights = 'NOT AVAILABLE';
+        highlights = 'not available';
         Param = 'highlights';
          ErrDispConsole(Param,list_papers_i);
          num_highlights = 0;
@@ -187,7 +187,7 @@ function metadata = article_data_extract(dir_db,list_papers_i)
         end
         
     catch
-        abstract = 'NOT AVAILABLE';
+        abstract = 'not available';
         Param = 'abstract';
         ErrDispConsole(Param,list_papers_i);
     end
