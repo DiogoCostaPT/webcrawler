@@ -32,8 +32,15 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
                                          % };    
 
-folder_name_to_store_results = 'nutrients_AND_climate_change';
-main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
+%folder_name_to_store_results = 'great_lakes_AND_climate_change';
+%main_keyword_searchengine_raw_multiple = {'"great lakes" AND "climate change"'
+                                          %'permafrost AND Canada';...
+                                          %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
+                                          %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
+%                                          };     
+
+folder_name_to_store_results = 'permafrost_AND_climate_change';
+main_keyword_searchengine_raw_multiple = {'"permafrost" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
@@ -44,7 +51,7 @@ main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
 request_server_papers_in_list_save_htmls = 0; % carefull -> it will send requests to Science-Direct server
 
 % 3
-extract_papers_info = 0; 
+extract_papers_info = 1; 
 force_overwrite = 1;
 
 generate_report = 1;
@@ -496,7 +503,12 @@ if generate_report
          h1 = waitbar(0,'Writting report...');
          set(h1,'Position', [500 300 280 70]);
          for r=1:numel(metadata_all_list_table(:,1))
-             i = index_order(r);
+             try
+                 i = index_order(r);
+             catch
+                 continue
+             end     
+               
             paper_table_i = metadata_all_list_table(i,:);
             
             if ~isempty(char(paper_table_i.Search_Keys))
