@@ -44,7 +44,7 @@ main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
 request_server_papers_in_list_save_htmls = 0; % carefull -> it will send requests to Science-Direct server
 
 % 3
-extract_papers_info = 1; 
+extract_papers_info = 0; 
 force_overwrite = 1;
 
 generate_report = 1;
@@ -494,7 +494,8 @@ if generate_report
                 
                 % Paper title and year
                 writetext = [paper_table_i.Paper_title{:},' (',paper_table_i.Year{:},')'];
-                fprintf(fid, '%s\n', ['Paper_title -> ',writetext]);
+                fprintf(fid, '%s\n', ['Paper_title: ',writetext]);
+                fprintf(fid, '%s', ['Highlights: ']);
                 
                 % add highlights
                 for h = 1:numel(metadata_all_list_table(1,9:end))
@@ -672,7 +673,7 @@ if plot_maps
                 load([dir4search,'/',foldernames{s},'/metadata_this_folder.mat']); 
                 countname_found = [countname_found,countname];
                 metadata_i = add_new_dataset_to_print;
-            
+                
                 % Coordinates
                 lat_i = latlon_cell{iloc,2};
                 lon_i = latlon_cell{iloc,3};
