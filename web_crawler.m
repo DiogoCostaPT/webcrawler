@@ -19,12 +19,12 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
                                   
 %}
 
-folder_name_to_store_results = 'nutrients_AND_climate_change';
-main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
+%folder_name_to_store_results = 'nutrients_AND_climate_change';
+%main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-                                          };                                  
+%                                          };                                  
 
 %main_keyword_searchengine_raw_multiple = {'%22groudwater%22';
                                           %'permafrost AND Canada';...
@@ -32,12 +32,12 @@ main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
                                          % };    
 
-%folder_name_to_store_results = 'great_lakes_AND_climate_change';
-%main_keyword_searchengine_raw_multiple = {'"great lakes" AND "climate change"'
+folder_name_to_store_results = 'great_lakes_AND_climate_change';
+main_keyword_searchengine_raw_multiple = {'"great lakes" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-%                                          };     
+                                          };     
 
 %folder_name_to_store_results = 'permafrost_AND_climate_change';
 %main_keyword_searchengine_raw_multiple = {'"permafrost" AND "climate change"'
@@ -51,7 +51,7 @@ main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
 request_server_papers_in_list_save_htmls = 0; % carefull -> it will send requests to Science-Direct server
 
 % 3
-extract_papers_info = 0; 
+extract_papers_info = 1; 
 force_overwrite = 1;
 
 generate_report = 1;
@@ -532,8 +532,14 @@ if generate_report
                      writetext = [writetext,' '];
                      fprintf(fid, '%s', writetext);
                 end
-                fprintf(fid, '%s\n','');
-                fprintf(fid, '%s\n', '-----------------------');
+                fprintf(fid, '%s\n\n','');
+                
+                % add abstract
+                fprintf(fid, '%s\n', 'Abstract: ');
+                writetext = char(metadata_all_list_table{i,8});
+                writetext = strtrim(writetext);
+                fprintf(fid, '%s\n', writetext);
+                 fprintf(fid, '%s\n', '-----------------------');
                 fprintf(fid, '%s\n','');
                                 
             end

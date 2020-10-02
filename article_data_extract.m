@@ -150,6 +150,7 @@ function metadata = article_data_extract(dir_db,list_papers_i)
               look4 = 0;
           end
       end
+      highlights = [highlights;highlights_cut];
       
       highlights = char(highlights);
       
