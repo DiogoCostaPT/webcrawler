@@ -19,12 +19,12 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
                                   
 %}
 
-%folder_name_to_store_results = 'nutrients_AND_climate_change';
-%main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
+folder_name_to_store_results = 'nutrients_AND_climate_change';
+main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-%                                          };                                  
+                                          };                                  
 
 %main_keyword_searchengine_raw_multiple = {'%22groudwater%22';
                                           %'permafrost AND Canada';...
@@ -39,19 +39,19 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
 %                                          };     
 
-folder_name_to_store_results = 'permafrost_AND_climate_change';
-main_keyword_searchengine_raw_multiple = {'"permafrost" AND "climate change"'
+%folder_name_to_store_results = 'permafrost_AND_climate_change';
+%main_keyword_searchengine_raw_multiple = {'"permafrost" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-                                          };     
+%                                          };     
 
                                           
 % 2                                    
 request_server_papers_in_list_save_htmls = 0; % carefull -> it will send requests to Science-Direct server
 
 % 3
-extract_papers_info = 1; 
+extract_papers_info = 0; 
 force_overwrite = 1;
 
 generate_report = 1;
@@ -512,16 +512,18 @@ if generate_report
             paper_table_i = metadata_all_list_table(i,:);
             
             if ~isempty(char(paper_table_i.Search_Keys))
-                 fprintf(fid, '%s\n', '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+                 fprintf(fid, '%s\n', '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
                  fprintf(fid, '%s\n', ['SEARCH WORDS -> ',char(paper_table_i.Search_Keys)]);
-                 fprintf(fid, '%s\n', '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-                 fprintf(fid, '%s\n',' ');
+                 fprintf(fid, '%s\n', '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+                 fprintf(fid, '%s\n','');
             else
                 
                 % Paper title and year
                 writetext = [paper_table_i.Paper_title{:},' (',paper_table_i.Year{:},')'];
-                fprintf(fid, '%s\n', ['Paper_title: ',writetext]);
-                fprintf(fid, '%s', ['Highlights: ']);
+                fprintf(fid, '%s\n', '-----------------------');
+                fprintf(fid, '%s\n', 'Paper_title:');
+                fprintf(fid, '%s\n\n', writetext);
+                fprintf(fid, '%s\n', 'Highlights: ');
                 
                 % add highlights
                 for h = 1:numel(metadata_all_list_table(1,9:end))
@@ -530,7 +532,9 @@ if generate_report
                      writetext = [writetext,' '];
                      fprintf(fid, '%s', writetext);
                 end
-                fprintf(fid, '%s\n\n',' ');
+                fprintf(fid, '%s\n','');
+                fprintf(fid, '%s\n', '-----------------------');
+                fprintf(fid, '%s\n','');
                                 
             end
             waitbar(r/numel(metadata_all_list_table(:,1)));
