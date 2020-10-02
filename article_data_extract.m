@@ -90,32 +90,8 @@ function metadata = article_data_extract(dir_db,list_papers_i)
         Param = 'keywords';
         ErrDispConsole(Param,list_papers_i);
     end
-    try
-        % Abstract (some html code remains at the start, but should not be
-        % problematic)
-        start_key = 'Abstract</h2><div';
-        abstract_s = strfind(html_data,start_key);
-        abstract_cut = html_data(abstract_s+numel(start_key):end);
-        other_key = 'abstract-sec';
-        abstract_s = strfind(abstract_cut,other_key);
-        abstract_cut = abstract_cut(numel(other_key)+abstract_s(1):end);
-        other_key = '><';
-        abstract_s = strfind(abstract_cut,other_key);
-        abstract_cut = abstract_cut(abstract_s(1)+numel(other_key):end);
-         other_key = '>';
-        abstract_s = strfind(abstract_cut,other_key);
-        abstract_cut = abstract_cut(abstract_s(1)+numel(other_key):end);
-        
-        temp = strfind(abstract_cut,'</p>');
-        abstract_e = temp(1);
-        abstract = abstract_cut(1:abstract_e-1);
-    catch
-        abstract = 'NOT AVAILABLE';
-        Param = 'abstract';
-        ErrDispConsole(Param,list_papers_i);
-    end
     
-     %Extract highlights
+    %Extract highlights
      try
       start_key = 'Highlights</h2><div ';
       abstract_s = strfind(html_data,start_key); 
@@ -154,6 +130,8 @@ function metadata = article_data_extract(dir_db,list_papers_i)
       
       highlights = char(highlights);
       
+      num_highlights = numel(highlights(:,1));
+      
       if ~isempty(highlights_cut)
           other_key = 'class="list-description"><p ';
           abstract_s = strfind(highlights_cut,other_key); 
@@ -164,14 +142,57 @@ function metadata = article_data_extract(dir_db,list_papers_i)
          highlights = 'NOT AVAILABLE';
         Param = 'highlights';
          ErrDispConsole(Param,list_papers_i);
+         num_highlights = 0;
       end
       
      catch
         highlights = 'NOT AVAILABLE';
         Param = 'highlights';
          ErrDispConsole(Param,list_papers_i);
+         num_highlights = 0;
      end
+    
      
+     
+    try
+        % Abstract (some html code remains at the start, but should not be
+        % problematic)
+        start_key = 'class="Abstracts';
+        abstract_s = strfind(html_data,start_key);
+        abstract_cut = html_data(abstract_s+numel(start_key):end);
+        %other_key = 'abstract-sec';
+        %abstract_s = strfind(abstract_cut,other_key);
+        %abstract_cut = abstract_cut(numel(other_key)+abstract_s(1):end);
+                
+        end_key = '</p>';
+        abstract_s = strfind(abstract_cut,end_key);
+        
+        % If there are highlights, the html changes a bit
+        if num_highlights == 0
+            start_i = 1;
+            end_i = abstract_s(1)-1;
+        else
+            start_i = abstract_s(num_highlights+1);
+            end_i = abstract_s(num_highlights+2);  
+        end
+        abstract_cut = abstract_cut(start_i:end_i);
+        
+        find_textstart = '">';
+        abstract_s = strfind(abstract_cut,find_textstart);
+        abstract_cut = abstract_cut(abstract_s(end)+numel(find_textstart):end);
+       
+        abstract = erase(abstract_cut,'<p>');
+        if strcmp(abstract(end),'<')
+            abstract = abstract(1:end-1);
+        end
+        
+    catch
+        abstract = 'NOT AVAILABLE';
+        Param = 'abstract';
+        ErrDispConsole(Param,list_papers_i);
+    end
+    
+          
 
 
     metadata = {title,year,journal,article_type,authors_name,keywords,abstract,highlights};

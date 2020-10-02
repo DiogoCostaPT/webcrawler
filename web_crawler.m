@@ -518,10 +518,11 @@ if generate_report
                  fprintf(fid, '%s\n','');
             else
                 
-                % Paper title and year
-                writetext = [paper_table_i.Paper_title{:},' (',paper_table_i.Year{:},')'];
-                fprintf(fid, '%s\n', '-----------------------');
-                fprintf(fid, '%s\n', 'Paper_title:');
+                % Paper type, title and year
+                fprintf(fid, '%s\n', '----------------------------------------------');
+                writetext = [paper_table_i.Type_of_Publication{:},' (',paper_table_i.Year{:},')'];
+                fprintf(fid, '%s\n', writetext);
+                writetext = paper_table_i.Paper_title{:};
                 fprintf(fid, '%s\n\n', writetext);
                 fprintf(fid, '%s\n', 'Highlights: ');
                 
@@ -539,7 +540,7 @@ if generate_report
                 writetext = char(metadata_all_list_table{i,8});
                 writetext = strtrim(writetext);
                 fprintf(fid, '%s\n', writetext);
-                 fprintf(fid, '%s\n', '-----------------------');
+                 %fprintf(fid, '%s\n', '-----------------------');
                 fprintf(fid, '%s\n','');
                                 
             end
