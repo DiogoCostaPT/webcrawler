@@ -54,15 +54,16 @@ request_server_papers_in_list_save_htmls = 0; % carefull -> it will send request
 extract_papers_info = 1; 
 force_overwrite = 1;
 
-generate_report = 1;
-
 % 4
+generate_reports = 1;
+
+% 5
 plot_paper_info_by_folder = 0; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercury','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
-% 5
+% 6
 plot_maps = 0;
 
 
@@ -256,7 +257,9 @@ end
     %% Extract paper info
 if extract_papers_info
 
-foldernames = dir(dir4search);  
+foldernames = dir(dir4search); 
+dirFlags = [foldernames.isdir];
+foldernames = foldernames(dirFlags);
 foldernames = {foldernames.name};
 foldernames(strcmp(foldernames,'.')) = [];
 foldernames(strcmp(foldernames,'..')) = [];
@@ -303,12 +306,16 @@ metadata_all_list = {};
             list_papers_raw = dir(dir_db);
            
             list_papers = {list_papers_raw.name};
+            list_papers(strcmp(list_papers,'.')) = [];
+            list_papers(strcmp(list_papers,'..')) = [];
+            list_papers(strcmp(list_papers,'href_list.mat')) = [];
+            list_papers(strcmp(list_papers,'metadata_this_folder.mat')) = [];
 
             for i = 1:1:numel(list_papers)
                 
                 if i == 1
                 %metadata_all_cell = {};
-                metadata_all_list = [metadata_all_list;{foldernames{k},'-','-','-','-','-','-','-','-'}];
+                metadata_all_list = [metadata_all_list;{foldernames{k},'-','-','-','-','-','-','-','-','-'}];
                 end
 
                 list_papers_i = list_papers{i};
@@ -320,7 +327,7 @@ metadata_all_list = {};
                 waitbar(i/numel(list_papers),h,...
                             {'Extracting info from papers-html (STEP 3)',...
                             ['Keyword combination = ',num2str(k),' out of ',num2str(numel(foldernames))],...
-                            ['Paper: ', num2str(i),' out of ',num2str(numel(foldernames))]});
+                            ['Paper: ', num2str(i),' out of ',num2str(numel(list_papers))]});
             end
             if ~isempty(metadata)
                 if contains(db_i,'%20AND%20')
@@ -349,6 +356,7 @@ metadata_all_list = {};
                                                         'Keywords',...
                                                         'Abstract',...
                                                         'Highlights',...
+                                                        'URL'
                                                         };
     
     writetable(metadata_all_list_table,[dir4search,'/metadata_all_list',addwordi,'.csv'],'Delimiter',';'); 
@@ -469,7 +477,7 @@ close(h)
     end
     
 % Generate report
-if generate_report
+if generate_reports
     
      try
            csvfile = [dir4search,'/metadata_all_list.csv'];
@@ -484,71 +492,119 @@ if generate_report
      end
         
      if enter_2
-         
-         fid=fopen([dir4search,'/report.txt'],'w');
-                  
+                                      
          % order the entries by year, but respecting the different search
          % words
          intervals4easchsearch = find(~cellfun(@isempty,table2cell(metadata_all_list_table(:,1))));
          allyears = str2double(metadata_all_list_table.Year);
          index_order = [];
-         for i=1:numel(intervals4easchsearch)-1
-             index_order = [index_order;intervals4easchsearch(i)];
-             range_i_years = allyears(intervals4easchsearch(i)+1:intervals4easchsearch(i+1)-1);
-             [range_i_years_order range_i_years_order_loc]= sort(range_i_years,'descend');
-             index_order = [index_order;intervals4easchsearch(i)+range_i_years_order_loc];
+         if intervals4easchsearch > 1 % whit hcountry analysis
+             for i=1:numel(intervals4easchsearch)-1
+                 index_order = [index_order;intervals4easchsearch(i)];
+                 range_i_years = allyears(intervals4easchsearch(i)+1:intervals4easchsearch(i+1)-1);
+                 [range_i_years_order range_i_years_order_loc]= sort(range_i_years,'descend');
+                 index_order = [index_order;intervals4easchsearch(i)+range_i_years_order_loc];
+             end
+         else  % no coutry analysis
+              [range_i_years_order range_i_years_order_loc]= sort(allyears,'descend');
+              index_order = range_i_years_order_loc;
          end
          
          % start report                                  
          h1 = waitbar(0,'Writting report...');
          set(h1,'Position', [500 300 280 70]);
+         itemnum_global = 0;
+         itemnum_local = 0;
+         flag_general_country = 0;
+         flag_open_countryonce = 0;
          for r=1:numel(metadata_all_list_table(:,1))
              try
                  i = index_order(r);
              catch
                  continue
              end     
-               
+                         
             paper_table_i = metadata_all_list_table(i,:);
             
             if ~isempty(char(paper_table_i.Search_Keys))
-                 fprintf(fid, '%s\n', '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-                 fprintf(fid, '%s\n', ['SEARCH WORDS -> ',char(paper_table_i.Search_Keys)]);
-                 fprintf(fid, '%s\n', '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-                 fprintf(fid, '%s\n','');
+                
+                 if flag_general_country == 0
+                    fid=fopen([dir4search,'/GENERAL_report_',folder_name_to_store_results,'.docx'],'w');
+                    flag_general_country = 1;
+                 else
+                     if flag_open_countryonce == 0
+                        fclose(fid);
+                        fid=fopen([dir4search,'/byCOUNTRY_report_',folder_name_to_store_results,'.docx'],'w');
+                        flag_open_countryonce = 1;
+                     end
+                 end
+                
+                 fprintf(fid, '%s\n', '===================================================================================');
+                 print_searchwords = strrep(char(paper_table_i.Search_Keys),'%20',' ');
+                 fprintf(fid, '%s\n\t', ['---->	SEARCH WORDS -> ',print_searchwords]);
+                fprintf(fid, '%s\n', '===================================================================================');
+                fprintf(fid, '%s\n','Starting list...');
+                fprintf(fid, '%s\n','');
+                itemnum_local = 0;
             else
                 
+                itemnum_global = itemnum_global + 1;
+                itemnum_local = itemnum_local + 1;
+                
                 % Paper type, title and year
-                fprintf(fid, '%s\n', '----------------------------------------------');
-                writetext = [upper(paper_table_i.Type_of_Publication{:}),' (',paper_table_i.Year{:},')'];
-                fprintf(fid, '%s\n', writetext);
+                fprintf(fid, '%s\n','%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+                fprintf(fid, '%s\n',['ITEM_',num2str(itemnum_global)]);
+                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
+                writetext = [upper(paper_table_i.Type_of_Publication{:}),' (Year: ',paper_table_i.Year{:},')'];
+                fprintf(fid, '%s\n\n', writetext);
                 writetext = paper_table_i.Paper_title{:};
                 fprintf(fid, '%s\n\n', writetext);
+                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
                 fprintf(fid, '%s\n', 'Highlights: ');
                 
                 % add highlights
-                for h = 1:numel(metadata_all_list_table(1,9:end))
+                for h = 1:numel(metadata_all_list_table(1,9:end-1))
                      writetext = char(metadata_all_list_table{i,8+h});
                      writetext = strtrim(writetext);
                      if ~isempty(writetext)
-                        fprintf(fid, '%s\n', writetext);
+                        fprintf(fid, '%s\n', ['- ',writetext]);
                      end
                 end
                 fprintf(fid, '%s\n','');
                 
                 % add abstract
+                fprintf(fid, '%s','');
+                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
                 fprintf(fid, '%s\n', 'Abstract: ');
                 writetext = char(metadata_all_list_table{i,8});
                 writetext = strtrim(writetext);
+                fprintf(fid, '%s','');
                 fprintf(fid, '%s\n', writetext);
                  %fprintf(fid, '%s\n', '-----------------------');
                 fprintf(fid, '%s\n','');
+                
+                % add url
+                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
+                fprintf(fid, '%s\n', 'URL: ');
+                writetext = char(metadata_all_list_table{i,end});
+                fprintf(fid, '%s\n', [writetext,' ']);
+                
+                % Print search words
+                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
+                fprintf(fid, '%s\n\t', ['SEARCH WORDS: ', print_searchwords]);
+                fprintf(fid, '%s\n', ['  item: ', num2str(itemnum_local)]);
+                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
+                fprintf(fid, '%s\f', '');
+                
                                 
             end
             waitbar(r/numel(metadata_all_list_table(:,1)));
          end
-         fclose(fid);
-         close(h1)
+         try 
+             fclose(fid);
+         catch
+         end
+         close(h1);
          
      end
     

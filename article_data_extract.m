@@ -192,10 +192,15 @@ function metadata = article_data_extract(dir_db,list_papers_i)
         ErrDispConsole(Param,list_papers_i);
     end
     
-          
+     % get URL
+     start_key = '<link rel="canonical" href="';
+     url_link_init = strfind(html_data,start_key);
+     url_link = html_data(url_link_init+numel(start_key):end);
+     end_key = '" />';
+     url_link_end = strfind(url_link,end_key);
+     url_link = url_link(1:url_link_end(1)-1);     
 
-
-    metadata = {title,year,journal,article_type,authors_name,keywords,abstract,highlights};
+    metadata = {title,year,journal,article_type,authors_name,keywords,abstract,highlights,url_link};
     
 end
 
