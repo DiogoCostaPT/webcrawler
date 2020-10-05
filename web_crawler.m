@@ -19,32 +19,27 @@ main_keyword_searchengine_raw_multiple = {'"climate change"';
                                   
 %}
 
-%folder_name_to_store_results = 'nutrients_AND_climate_change';
-%main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
+folder_name_to_store_results = 'nutrients_AND_climate_change';
+main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-%                                          };                                  
+                                          };                                  
+ 
 
-%main_keyword_searchengine_raw_multiple = {'%22groudwater%22';
+%folder_name_to_store_results = 'great_lakes_AND_climate_change';
+%main_keyword_searchengine_raw_multiple = {'"great lakes" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-                                         % };    
-
-folder_name_to_store_results = 'great_lakes_AND_climate_change';
-main_keyword_searchengine_raw_multiple = {'"great lakes" AND "climate change"'
-                                          %'permafrost AND Canada';...
-                                          %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
-                                          %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-                                          };     
+%                                          };     
 
 %folder_name_to_store_results = 'permafrost_AND_climate_change';
 %main_keyword_searchengine_raw_multiple = {'"permafrost" AND "climate change"'
                                           %'permafrost AND Canada';...
                                           %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
                                           %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-%                                          };     
+ %                                         };     
 
                                           
 % 2                                    
@@ -55,13 +50,14 @@ extract_papers_info = 1;
 force_overwrite = 1;
 
 % 4
-generate_reports = 1;
+generate_reports = 0;
+only_title_and_highlights = 1;
 
 % 5
-plot_paper_info_by_folder = 0; %1) # papers and keywords
+plot_paper_info_by_folder = 1; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
-%        'cation','methane','mercury','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
+%        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
 % 6
 plot_maps = 0;
@@ -498,7 +494,7 @@ if generate_reports
          intervals4easchsearch = find(~cellfun(@isempty,table2cell(metadata_all_list_table(:,1))));
          allyears = str2double(metadata_all_list_table.Year);
          index_order = [];
-         if intervals4easchsearch > 1 % whit hcountry analysis
+         if numel(intervals4easchsearch) > 1 % whith country analysis
              for i=1:numel(intervals4easchsearch)-1
                  index_order = [index_order;intervals4easchsearch(i)];
                  range_i_years = allyears(intervals4easchsearch(i)+1:intervals4easchsearch(i+1)-1);
