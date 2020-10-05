@@ -46,15 +46,15 @@ main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
 request_server_papers_in_list_save_htmls = 0; % carefull -> it will send requests to Science-Direct server
 
 % 3
-extract_papers_info = 1; 
+extract_papers_info = 0; 
 force_overwrite = 1;
 
 % 4
-generate_reports = 0;
+generate_reports = 1;
 only_title_and_highlights = 1;
 
 % 5
-plot_paper_info_by_folder = 1; %1) # papers and keywords
+plot_paper_info_by_folder = 0; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
@@ -513,6 +513,13 @@ if generate_reports
          itemnum_local = 0;
          flag_general_country = 0;
          flag_open_countryonce = 0;
+         
+         if only_title_and_highlights
+              add_text = '_simplified';
+         else
+             add_text = '';
+         end
+         
          for r=1:numel(metadata_all_list_table(:,1))
              try
                  i = index_order(r);
@@ -524,13 +531,14 @@ if generate_reports
             
             if ~isempty(char(paper_table_i.Search_Keys))
                 
+                
                  if flag_general_country == 0
-                    fid=fopen([dir4search,'/GENERAL_report_',folder_name_to_store_results,'.docx'],'w');
+                    fid=fopen([dir4search,'/GENERAL_report_',folder_name_to_store_results,add_text,'.docx'],'w');
                     flag_general_country = 1;
                  else
                      if flag_open_countryonce == 0
                         fclose(fid);
-                        fid=fopen([dir4search,'/byCOUNTRY_report_',folder_name_to_store_results,'.docx'],'w');
+                        fid=fopen([dir4search,'/byCOUNTRY_report_',folder_name_to_store_results,add_text,'.docx'],'w');
                         flag_open_countryonce = 1;
                      end
                  end
@@ -538,6 +546,9 @@ if generate_reports
                  fprintf(fid, '%s\n', '===================================================================================');
                  print_searchwords = strrep(char(paper_table_i.Search_Keys),'%20',' ');
                  fprintf(fid, '%s\n\t', ['---->	SEARCH WORDS -> ',print_searchwords]);
+                 if only_title_and_highlights
+                     fprintf(fid, '%s\n\t', 'Simplified report: only title and highlights');
+                 end
                 fprintf(fid, '%s\n', '===================================================================================');
                 fprintf(fid, '%s\n','Starting list...');
                 fprintf(fid, '%s\n','');
@@ -568,16 +579,18 @@ if generate_reports
                 end
                 fprintf(fid, '%s\n','');
                 
-                % add abstract
-                fprintf(fid, '%s','');
-                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
-                fprintf(fid, '%s\n', 'Abstract: ');
-                writetext = char(metadata_all_list_table{i,8});
-                writetext = strtrim(writetext);
-                fprintf(fid, '%s','');
-                fprintf(fid, '%s\n', writetext);
-                 %fprintf(fid, '%s\n', '-----------------------');
-                fprintf(fid, '%s\n','');
+                if ~only_title_and_highlights
+                    % add abstract
+                    fprintf(fid, '%s','');
+                    fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
+                    fprintf(fid, '%s\n', 'Abstract: ');
+                    writetext = char(metadata_all_list_table{i,8});
+                    writetext = strtrim(writetext);
+                    fprintf(fid, '%s','');
+                    fprintf(fid, '%s\n', writetext);
+                     %fprintf(fid, '%s\n', '-----------------------');
+                    fprintf(fid, '%s\n','');
+                end
                 
                 % add url
                 fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
