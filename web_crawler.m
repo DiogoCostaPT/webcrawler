@@ -1,7 +1,4 @@
 
-% Options
-
-% 1
 
 %{
 main_keyword_searchengine_raw_multiple = {'"climate change"';
@@ -47,94 +44,69 @@ main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change"'
  %                                         };     
      
 myApiKey = '3291a872bc42269b1594b782de7524c3';
- 
-% 1
-search_engine_retrive_list_of_papers_and_urls = false;  % carefull -> it will send requests to Science-Direct server
+
+
+%% TOOLS
+
+% STEP 1
+RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to Science-Direct server
 by_country = 0; % will only take the first entry of main_keyword_searchengine_raw_multiple and add the country names
 
-% 2                                    
-request_server_papers_in_list_save_htmls = false; % carefull -> it will send requests to Science-Direct server
+% STEP 2                                  
+RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
 
-% 3
-extract_papers_info = false; 
+% STEP 3
+ExtractInfoFromPapers_STEP_3_flag = false; 
 force_overwrite = true;
 
-% 4
-plot_paper_info_by_folder = false; %1) # papers and keywords
+% STEP 4
+PlotResults_STEP_4_flag = false; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
-% 5
-plot_maps = false;
+% STEP 5
+PlotMaps_STEP_5_flag = false;
 
-% 6
-generate_reports = true;
+% STEP 6
+GenerateReport_STEP_6_flag = true;
 only_title_and_highlights = false;
 
-% additiona settings
-num_search_pages = 1;
+
+% additional settings
+database_API_available = {'Science_Direct','Scopus'};
+database_API_select = 1;
+num_search_pages = 60;
 show = 100;
 pausetime = 10; % CAREFULL, DON'T PUT THIS LOWER THAN 10
 
 
-%% code starts here........
-
-mkdir('papers');
-dir4search = ['papers/',folder_name_to_store_results];
-mkdir(dir4search);
-
-% If analysis by country
-if by_country 
-    main_keyword_searchengine_raw_multiple = add_listing_countries(main_keyword_searchengine_raw_multiple{1}); 
-end
 
 
 
-%% STEP 1: EXTRACT LIST OF PAPERS
-if search_engine_retrive_list_of_papers_and_urls
-    
-    RetrieveListPapers_STEP_1(main_keyword_searchengine_raw_multiple,num_search_pages,pausetime,show,dir4search);
 
-end
+%% call WebCrawler_ENGINE
 
+database_API = database_API_available{database_API_select};
 
-%% STEP 2: EXTRACT HTML
-if request_server_papers_in_list_save_htmls 
- 
-    RequestPapersFromList_STEP_2(dir4search,pausetime);
-    
-end
+WebCrawler_ENGINE(folder_name_to_store_results,...
+                by_country,...
+                main_keyword_searchengine_raw_multiple,...
+                num_search_pages,...
+                pausetime,...
+                show,...
+                database_API,...
+                RetrieveListPapers_STEP_1_flag,...,
+                RequestPapersFromList_STEP_2_flag,...
+                ExtractInfoFromPapers_STEP_3_flag,...
+                force_overwrite,...
+                PlotResults_STEP_4_flag,...
+                filter_papers_keywords,...
+                PlotMaps_STEP_5_flag,...
+                GenerateReport_STEP_6_flag,...
+                only_title_and_highlights);
 
-%% STEP 3: Extract paper info
-if extract_papers_info
-
-    ExtractInfoFromPapers_STEP_3(dir4search,by_country,folder_name_to_store_results);
-    
-end
-
-%% Plot results
-if plot_paper_info_by_folder
-
-    PlotResults_STEP_4(main_keyword_searchengine_raw_multiple,dir4search);
-    
-end
-    
-% Plot Maps
-%%
-if plot_maps
-    
-    PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple);
-   
-end
-
-% Generate report
-if generate_reports
-  
-    GenerateReport_STEP_6(dir4search,only_title_and_highlights,folder_name_to_store_results);
-    
-end
-
+            
 
 
 

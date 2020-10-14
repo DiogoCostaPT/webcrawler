@@ -15,10 +15,15 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
            csvfile = [dir4search,'/metadata_all_list.csv'];
            metadata_all_list_table = readtable(csvfile);
         catch
-           disp(['WARNING: ',matfile,' file not found -> need to run first the extract_papers_info function'])
+           disp(['WARNING: ',csvfile,' file not found -> need to run first the extract_papers_info function'])
            return
         end
 
+        if isempty(metadata_all_list_table)
+           disp(['WARNING: ',csvfile,' file was found but is empty -> need to run the extract_papers_info function'])
+           return
+        end
+        
         %db_names = fieldnames(metadata_all_list);
         %db_name_i = db_names{k};
         %metadata = metadata_all_cell.(genvarname(db_name_i))

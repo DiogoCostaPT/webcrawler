@@ -1,5 +1,5 @@
 
-function ExtractInfoFromPapers_STEP_3(dir4search,by_country,folder_name_to_store_results)
+function ExtractInfoFromPapers_STEP_3(dir4search,by_country,folder_name_to_store_results,force_overwrite)
 
 
 foldernames = dir(dir4search); 
