@@ -3,6 +3,7 @@
 
 function RetrieveListPapers_STEP_1(...
             database_API,...
+            myScopusApiKey,...
             main_keyword_searchengine_raw_multiple,...
             num_search_pages,...
             pausetime,...
@@ -18,12 +19,16 @@ pausetimeurl_list_s = '';
 
 for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
-    main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
-    main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
-        
+        % URL Encoding (see https://dev.elsevier.com/sc_search_tips.html)
+        main_keyword_searchengine = main_keyword_searchengine_raw_multiple{k};
+        main_keyword_searchengine = strrep(main_keyword_searchengine,' ','%20');
+        main_keyword_searchengine = strrep(main_keyword_searchengine,'(','%28');
+        main_keyword_searchengine = strrep(main_keyword_searchengine,')','%29');
+                   
         url_list_s = [];
         url_list = {};
-        offset = 0;         
+        offset_sciencedirect = 0;    
+        start_scopus = 0;
 
         for p = 1:num_search_pages 
 
@@ -35,8 +40,19 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
             if ~isempty(url_list_s) || p==1
 
                 try
-
-                    url_query = ['https://www.sciencedirect.com/search/advanced?tak=',main_keyword_searchengine,'&show=',num2str(show),'&offset=',num2str(offset)];
+                    
+                    if contains(database_API,'Science_Direct')
+                       url_query = ['https://www.sciencedirect.com/search/advanced?tak=',...
+                                    main_keyword_searchengine,...
+                                    '&show=',num2str(show),'&offset=',num2str(offset_sciencedirect)];
+                    elseif contains(database_API,'Scopus')
+                        show = 25; % maximum permited (it will return service-error if hight
+                       url_query = ['https://api.elsevier.com/content/search/index:SCOPUS?',...
+                                    'start=',num2str(start_scopus),'&count=',num2str(show),...
+                                    '&query=TITLE-ABS-KEY(',main_keyword_searchengine,...
+                                    '%29&apikey=',num2str(myScopusApiKey)];
+                    end
+                    
                     html_raw = webread(url_query);
                     pause(pausetime);
 
@@ -57,7 +73,8 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
                         url_list = [url_list;url_link_i];
 
                     end
-                    offset = show * p;
+                    offset_sciencedirect = show * p;
+                    start_scopus = offset_sciencedirect;
                 catch
                     disp('> No more pages to search')
                     break;
