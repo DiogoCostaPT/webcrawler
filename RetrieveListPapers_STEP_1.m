@@ -79,7 +79,16 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
                     
                     elseif contains(database_API,'Scopus')
                         start_scopus = show * p;
-                        
+                        for l = 1:show
+                            %url_list_s = html_raw.search_results.entry{l,1}.link(3).x_href;
+                            doi = html_raw.search_results.entry{l,1}.prism_doi;
+                            doi = strrep(doi,'"','%22');
+                            doi = strrep(doi,'/','%2F');
+                            url_list_s = ['http://api.elsevier.com/content/search/scopus?query=DOI%28',...
+                                       doi,...
+                                       '%29&apikey=',num2str(myScopusApiKey)];
+                            url_list = [url_list;url_list_s];
+                        end
                     end   
                     
                 catch
