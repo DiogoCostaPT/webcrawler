@@ -56,25 +56,32 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
                     html_raw = webread(url_query);
                     pause(pausetime);
 
-                    start_key = 'href="/science/';
-                    url_list_s = strfind(html_raw,start_key) + numel(start_key)-1;
+                    if contains(database_API,'Science_Direct')
+                        start_key = 'href="/science/';
+                        url_list_s = strfind(html_raw,start_key) + numel(start_key)-1;
 
 
-                    for i = 1:numel(url_list_s)
-                        temp = strfind(html_raw(url_list_s(i)+numel(url_list_s(i)):end),'" ');
-                        url_list_e = url_list_s(i)+numel(url_list_s(i)) + temp(1) - 2;
-                        add_port = html_raw(url_list_s(i):url_list_e);
+                        for i = 1:numel(url_list_s)
+                            temp = strfind(html_raw(url_list_s(i)+numel(url_list_s(i)):end),'" ');
+                            url_list_e = url_list_s(i)+numel(url_list_s(i)) + temp(1) - 2;
+                            add_port = html_raw(url_list_s(i):url_list_e);
 
-                        if contains(add_port,'https')
-                            continue
+                            if contains(add_port,'https')
+                                continue
+                            end
+
+                            url_link_i = ['https://www.sciencedirect.com/science',add_port];
+                            url_list = [url_list;url_link_i];
+
                         end
-
-                        url_link_i = ['https://www.sciencedirect.com/science',add_port];
-                        url_list = [url_list;url_link_i];
-
-                    end
-                    offset_sciencedirect = show * p;
-                    start_scopus = offset_sciencedirect;
+                        offset_sciencedirect = show * p;
+                        start_scopus = offset_sciencedirect;
+                    
+                    elseif contains(database_API,'Scopus')
+                        start_scopus = show * p;
+                        
+                    end   
+                    
                 catch
                     disp('> No more pages to search')
                     break;

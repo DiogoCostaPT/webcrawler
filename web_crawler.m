@@ -86,8 +86,6 @@ pausetime = 10; % CAREFULL, DON'T PUT THIS LOWER THAN 10
 
 
 
-
-
 %% call WebCrawler_ENGINE
 
 database_API = database_API_available{database_API_select};
