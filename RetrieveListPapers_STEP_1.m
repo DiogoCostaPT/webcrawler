@@ -2,8 +2,8 @@
 % Search List of Papers
 
 function RetrieveListPapers_STEP_1(...
-            database_API,...
             myScopusApiKey,...
+            by_country,...
             main_keyword_searchengine_raw_multiple,...
             num_search_pages,...
             pausetime,...
@@ -17,6 +17,10 @@ set(h,'Position', [500 300 280 70]);
 
 pausetimeurl_list_s = '';
 
+if by_country
+   countries_list = listing_countries(); 
+end
+
 for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
         % URL Encoding (see https://dev.elsevier.com/sc_search_tips.html)
@@ -27,7 +31,7 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
                    
         url_list_s = [];
         url_list = {};
-        offset_sciencedirect = 0;    
+        %offset_sciencedirect = 0;    
         start_scopus = 0;
 
         for p = 1:num_search_pages 
@@ -40,22 +44,24 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
             if ~isempty(url_list_s) || p==1
 
                 try
-                    
+                    %{
                     if contains(database_API,'Science_Direct')
                        url_query = ['https://www.sciencedirect.com/search/advanced?tak=',...
                                     main_keyword_searchengine,...
                                     '&show=',num2str(show),'&offset=',num2str(offset_sciencedirect)];
                     elseif contains(database_API,'Scopus')
-                        show = 25; % maximum permited (it will return service-error if hight
-                       url_query = ['https://api.elsevier.com/content/search/index:SCOPUS?',...
-                                    'start=',num2str(start_scopus),'&count=',num2str(show),...
-                                    '&query=',main_keyword_searchengine,...
-                                    '&apikey=',num2str(myScopusApiKey)];
-                    end
+                    show = 25; % maximum permited (it will return service-error if hight
+                   %}
+                    url_query = ['https://api.elsevier.com/content/search/index:SCOPUS?',...
+                                'start=',num2str(start_scopus),'&count=',num2str(show),...
+                                '&query=',main_keyword_searchengine,...
+                                '&apikey=',num2str(myScopusApiKey)];
+                    %end
                     
                     html_raw = webread(url_query);
                     pause(pausetime);
-
+                    
+                    %{
                     if contains(database_API,'Science_Direct')
                         start_key = 'href="/science/';
                         url_list_s = strfind(html_raw,start_key) + numel(start_key)-1;
@@ -78,18 +84,19 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
                         start_scopus = offset_sciencedirect;
                     
                     elseif contains(database_API,'Scopus')
-                        start_scopus = show * p;
-                        for l = 1:show
-                            %url_list_s = html_raw.search_results.entry{l,1}.link(3).x_href;
-                            doi = html_raw.search_results.entry{l,1}.prism_doi;
-                            doi = strrep(doi,'"','%22');
-                            doi = strrep(doi,'/','%2F');
-                            url_list_s = ['http://api.elsevier.com/content/search/scopus?query=DOI%28',...
-                                       doi,...
-                                       '%29&apikey=',num2str(myScopusApiKey)];
+                    %}
+                        for l = 1:numel(html_raw.search_results.entry)
+                            url_list_s = html_raw.search_results.entry{l,1}.link(3).x_href;
+                            %doi = html_raw.search_results.entry{l,1}.prism_doi;
+                            %doi = strrep(doi,'"','%22');
+                            %doi = strrep(doi,'/','%2F');
+                            %url_list_s = ['http://api.elsevier.com/content/search/scopus?query=DOI%28',...
+                            %           doi,...
+                            %           '%29&apikey=',num2str(myScopusApiKey)];
                             url_list = [url_list;url_list_s];
                         end
-                    end   
+                        start_scopus = show * p;
+                    %end   
                     
                 catch
                     disp('> No more pages to search')
@@ -98,13 +105,21 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
             end
 
         end
-
+        
         if ~isempty(url_list)
-            new_dir = [dir4search,'/',main_keyword_searchengine];   
+            if by_country
+                foldername = countries_list{k};
+            else
+                foldername = 'general';
+            end
+
+           new_dir = [dir4search,'/',foldername]; 
+
+
             mkdir(new_dir);
             filesave_name = [new_dir,'/href_list'];
             save(filesave_name,'url_list');
         end
+    end
 
-end
-    close(h)
+close(h)

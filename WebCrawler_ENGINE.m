@@ -3,12 +3,10 @@
 
 function WebCrawler_ENGINE(...
                 folder_name_to_store_results,...
-                by_country,...
                 main_keyword_searchengine_raw_multiple,...
                 num_search_pages,...
                 pausetime,...
                 show,...
-                database_API,...
                 myScopusApiKey,...
                 RetrieveListPapers_STEP_1_flag,...,
                 RequestPapersFromList_STEP_2_flag,...
@@ -25,9 +23,14 @@ mkdir('papers');
 dir4search = ['papers/',folder_name_to_store_results];
 mkdir(dir4search);
 
+by_country = 0;
+
 % If analysis by country
-if by_country 
-    main_keyword_searchengine_raw_multiple = add_listing_countries(main_keyword_searchengine_raw_multiple{1}); 
+if contains(main_keyword_searchengine_raw_multiple,'country_placeholder')
+    by_country = 1;
+    main_keyword_searchengine_raw_multiple = add_listing_countries(main_keyword_searchengine_raw_multiple); 
+else
+    main_keyword_searchengine_raw_multiple = {main_keyword_searchengine_raw_multiple};
 end
 
 
@@ -35,7 +38,7 @@ end
 %% STEP 1: EXTRACT LIST OF PAPERS
 if RetrieveListPapers_STEP_1_flag
     
-    RetrieveListPapers_STEP_1(database_API,myScopusApiKey,main_keyword_searchengine_raw_multiple,num_search_pages,pausetime,show,dir4search);
+    RetrieveListPapers_STEP_1(myScopusApiKey,by_country,main_keyword_searchengine_raw_multiple,num_search_pages,pausetime,show,dir4search);
 
 end
 
