@@ -4,7 +4,7 @@
 %folder_name_to_store_results = 'nutrients_AND_climate_change';
 %main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change AND country_placeholder"'};   
                                       
-folder_name_to_store_results = 'nutrients_AND_climate_change_title_SCOPUS';                
+folder_name_to_store_results = 'nutrients_AND_climate_change_SCOPUS';                
 main_keyword_searchengine_raw_multiple =[
                                         'DOCTYPE(ar) AND ',...
                                         ...%{'TITLE-ABS(',...
@@ -42,10 +42,10 @@ main_keyword_searchengine_raw_multiple =[
 %% TOOLS
 
 % STEP 1
-RetrieveListPapers_STEP_1_flag = true;  % carefull -> it will send requests to Science-Direct server
+RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to Science-Direct server
 
 % STEP 2                                  
-RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
+RequestPapersFromList_STEP_2_flag = true; % carefull -> it will send requests to Science-Direct server
 
 % STEP 3
 ExtractInfoFromPapers_STEP_3_flag = false; 
@@ -67,7 +67,7 @@ only_title_and_highlights = false;
 
 % additional settings
 num_search_pages = 200;
-pausetime = 10; % CAREFULL, DON'T PUT THIS LOWER THAN 10
+pausetime = 10; % in seconds -> CAREFULL, DON'T PUT THIS LOWER THAN 10
 
 
 
@@ -77,7 +77,6 @@ myScopusApiKey = '3291a872bc42269b1594b782de7524c3';
 
 show = 25; % this is the max of # of results that the scupos API allows (will return error if increased)
 
-database_API = database_API_available{database_API_select};
 
 WebCrawler_ENGINE(folder_name_to_store_results,...
                 main_keyword_searchengine_raw_multiple,...

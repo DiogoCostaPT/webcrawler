@@ -22,41 +22,128 @@ for k = 1:numel(foldernames)
 
     try
         load(matfilename);
-        options = weboptions('ContentType','text','RequestMethod','get');
-       
+               
         url_link_clean = {};
         %mkdir(folderpapers);
         files_list_raw = dir(new_dir);
         files_list = {files_list_raw.name};
+        files_list = files_list(~strcmp(files_list,'.')); 
+        files_list = files_list(~strcmp(files_list,'..')); 
         
         for  i = 1:1:numel(url_list)
 
             url_link = url_list{i};
-            code_loc = strfind(url_link,'/');
-            filename = url_link(code_loc(end)+1:end);
-            exists_paper = ~isempty(find(contains(files_list,[filename,'.mat'])==1));
-            isjournalref = contains(url_link,'/journal/');
-            isnotpaper = contains(url_link,'.pdf');
-            isrefworks = contains(url_link,'/referenceworks/');
-            isbookseries = contains(url_link,'/bookseries/');
-            isbook = contains(url_link,'/book/');
+            
+            filename = strrep(url_link,'https://dx.doi.org/','');
+            filename = strrep(filename,'.','_');
+            filename = strrep(filename,'/','_');
+            %filename = url_link(code_loc(end)+1:end);
+            
+            exists_paper = ~isempty(find(contains(files_list,[filename,'.mat'])==1));        
+            
+            %isjournalref = contains(url_link,'/journal/');
+            %isnotpaper = contains(url_link,'.pdf');
+            %isrefworks = contains(url_link,'/referenceworks/');
+            %isbookseries = contains(url_link,'/bookseries/');
+            %isbook = contains(url_link,'/book/');
 
             if exists_paper
                url_link_clean = [url_link_clean,url_link];
-               msg = ['> Had already been Saved: ',url_link];
+               msg = ['> Article already Saved: ',url_link];
                formatid = ['%s',num2str(numel(msg)),'\n'];
                disp(msg); 
                fprintf(fd,formatid,msg);
-            elseif isjournalref || isnotpaper || isrefworks || isbookseries || isbook
-               msg = ['> WARNING: Not a paper page (excluded): ',url_link];
-               formatid = ['%s',num2str(numel(msg)),'\n'];
-               disp(msg); 
-               fprintf(fd,formatid,msg);
+            %elseif isjournalref || isnotpaper || isrefworks || isbookseries || isbook
+            %   msg = ['> WARNING: Not a paper page (excluded): ',url_link];
+            %   formatid = ['%s',num2str(numel(msg)),'\n'];
+            %   disp(msg); 
+            %   fprintf(fd,formatid,msg);
             else
+                
+                found_flag = false;
+                
                 try
-                    pause(pausetime);
-                    html_data = webread(url_link,options);              
-                    title_name = extractBetween(html_data,'<meta name="citation_title" content="','" />');
+                    %html_data = webread(url_link); 
+                    doi_html = safeDiogo_webread(url_link,pausetime);
+                    
+                    %% Try different publishers
+    
+                    % ELSEVIER (sience-direct)
+                    if found_flag == false
+                        publisherName = 'Elsevier';
+                        try % ELSEVIER (sience-direct)
+                            publisher_url_encoded = extractBetween(doi_html,...
+                                'retrieve/articleSelectSinglePerm?Redirect=',...
+                                '&amp;key=');
+
+                            % decode publisher URL
+                            publisher_url_decoded = publisher_url_encoded;
+                            publisher_url_decoded = strrep(publisher_url_decoded,'%2F','/');
+                            publisher_url_decoded = strrep(publisher_url_decoded,'%3A',':');
+                            publisher_url_decoded = strrep(publisher_url_decoded,'%3F','?');
+                            publisher_url_decoded = strrep(publisher_url_decoded,'%25','%');
+                            publisher_url_decoded = strrep(publisher_url_decoded,'','');
+
+                            url_list_s = publisher_url_decoded;
+                            
+                            % need to go to Science-Direct to retrieve the
+                            % data
+                            html_data = safeDiogo_webread(publisher_url_decoded{:},pausetime);
+                            html_data = {publisherName,html_data};
+                            
+                            found_flag = true;
+
+                        catch 
+                            found_flag = false;
+                        end
+                    end
+                    
+                    % Multiple publishers that give info to doi.org
+                    if found_flag == false
+                        publisherNames_and_snippets_all = {...
+                                              'Springer','@SpringerLink';...
+                                              'Taylor_and_Francis','Taylor & Francis';...
+                                              'Wiley','<meta name="citation_abstract_html_url" content="https://onlinelibrary.wiley.com';...
+                                              'AGU_pubs','<span><a href="https://agupubs.onlinelibrary.wiley.com/';...
+                                              'MDPI','<meta content="mdpi" name="sso-service" />';...
+                                              'ACS_pubs','website:acspubs';...
+                                              'AIMS_press','<link rel="canonical" href="https://www.aimspress.com/';...
+                                              'ASABE','<meta property="og:image" content="https://elibrary.asabe.org/images/';...
+                                              'CNKI','<link rel="stylesheet" type="text/css" href="https://piccache.cnki.net/kdn/';
+                                              };
+                                          
+                        publisher_flag = ones(numel(publisherNames_and_snippets_all(:,1)),1) * false;
+                        
+                        for u = 1:numel(publisher_flag)
+                            publisher_flag(u) = contains(doi_html,...
+                                        publisherNames_and_snippets_all(u,2));  
+                        end
+                                
+                        if sum(publisher_flag) == 1
+                                html_data = {publisherNames_and_snippets_all{...
+                                            find(publisher_flag==1),1},...
+                                            doi_html};
+                                found_flag = true;
+                            else
+                                found_flag = false;
+                        end
+                    end
+
+
+                    if found_flag == false
+                       html_data = {'Unkown_Publisher',...
+                                        doi_html};
+                       found_flag = true;
+                    end
+                    
+                    
+                     save([new_dir,'/',filename],'html_data');
+
+
+                    %{
+                    title_name = extractBetween(html_data,...
+                        '<h2 xmlns:localzn="xalan://com.elsevier.scopus.biz.util.LocalizationHelper" class="h3">',...
+                        '<span>(Article)</span><span>(<span id="openAccessNotice" class="text-nowrap">Open Access</span>)</span>');
                     if ~isempty(title_name)
                         url_link_clean = [url_link_clean,url_link];
                         save([new_dir,'/',filename],'html_data');
@@ -70,8 +157,10 @@ for k = 1:numel(foldernames)
                        disp(msg); 
                        fprintf(fd,formatid,msg);
                     end
+                    %}
+                    
                 catch
-                    msg = ['> WARNING: Server returned error: ',url_link];
+                    msg = ['> WARNING: Problem with doi.org link: ',url_link];
                     formatid = ['%s',num2str(numel(msg)),'\n'];
                     disp(msg); 
                     fprintf(fd,formatid,msg);

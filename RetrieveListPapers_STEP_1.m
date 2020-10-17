@@ -33,6 +33,7 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         url_list = {};
         %offset_sciencedirect = 0;    
         start_scopus = 0;
+        htlm_raw = [];
 
         for p = 1:num_search_pages 
 
@@ -58,8 +59,9 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
                                 '&apikey=',num2str(myScopusApiKey)];
                     %end
                     
-                    html_raw = webread(url_query);
-                    pause(pausetime);
+                    % Get titles fro Scopus
+                    html_raw = safeDiogo_webread(url_query,pausetime);
+                    
                     
                     %{
                     if contains(database_API,'Science_Direct')
@@ -86,14 +88,37 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
                     elseif contains(database_API,'Scopus')
                     %}
                         for l = 1:numel(html_raw.search_results.entry)
-                            url_list_s = html_raw.search_results.entry{l,1}.link(3).x_href;
+                            
+                            %url_query = ['https://api.elsevier.com/content/search/index:SCOPUS?',...
+                            %    '&query=DOI%28',,...
+                            %    '%29&apikey=',num2str(myScopusApiKey)];
+                            
+                            %doi_code = html_raw.search_results.entry{l,1}.prism_doi;
                             %doi = html_raw.search_results.entry{l,1}.prism_doi;
                             %doi = strrep(doi,'"','%22');
                             %doi = strrep(doi,'/','%2F');
-                            %url_list_s = ['http://api.elsevier.com/content/search/scopus?query=DOI%28',...
+                            %url_list_s = ['https://api.elsevier.com/content/search/scopus?query=DOI%28',...
                             %           doi,...
                             %           '%29&apikey=',num2str(myScopusApiKey)];
-                            url_list = [url_list;url_list_s];
+                             
+                            % Get URL from google scholar and extracting
+                            % publisher's URL
+                            %title = html_raw.search_results.entry{l,1}.dc_title;
+                            %title_Encoding4google = strrep(title,' ','+');
+                            
+                            % Go to DOI.org to get link to publisher
+                            try
+                                doi_code = html_raw.search_results.entry{l,1}.prism_doi;
+                                doi_org_url = ['https://dx.doi.org/',...
+                                                  doi_code,...
+                                                  ];     
+                                url_list_s = doi_org_url;
+
+                                url_list = [url_list;url_list_s];
+                            catch
+                                 disp('> DOI not found -> entry skipped')
+                            end
+                            
                         end
                         start_scopus = show * p;
                     %end   
