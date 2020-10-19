@@ -71,11 +71,12 @@ for k = 1:numel(foldernames)
                     % ELSEVIER (sience-direct)
                     if found_flag == false
                         publisherName = 'Elsevier';
-                        try % ELSEVIER (sience-direct)
-                            publisher_url_encoded = extractBetween(doi_html,...
+                        
+                        % ELSEVIER (sience-direct)
+                        publisher_url_encoded = extractBetween(doi_html,...
                                 'retrieve/articleSelectSinglePerm?Redirect=',...
                                 '&amp;key=');
-
+                        if ~isempty(publisher_url_encoded)
                             % decode publisher URL
                             publisher_url_decoded = publisher_url_encoded;
                             publisher_url_decoded = strrep(publisher_url_decoded,'%2F','/');
@@ -93,7 +94,7 @@ for k = 1:numel(foldernames)
                             
                             found_flag = true;
 
-                        catch 
+                        else 
                             found_flag = false;
                         end
                     end
@@ -104,7 +105,6 @@ for k = 1:numel(foldernames)
                               'Springer','@SpringerLink';...
                               'Taylor_and_Francis','Taylor & Francis';...
                               'Wiley','<meta name="citation_publisher" content="John Wiley & Sons, Ltd">';...
-                              'AGU_pubs','<span><a href="https://agupubs.onlinelibrary.wiley.com/';...
                               'MDPI','<meta content="mdpi" name="sso-service" />';...
                               'ACS_pubs','website:acspubs';...
                               'AIMS_press','<link rel="canonical" href="https://www.aimspress.com/';...
@@ -145,6 +145,7 @@ for k = 1:numel(foldernames)
                         fprintf(fd,formatid,msg);
                     
                         html_data = {'Unkown_Publisher',...
+                                    url_link,...
                                         doi_html};
                         found_flag = true;
                     end

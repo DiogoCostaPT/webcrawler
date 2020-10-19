@@ -36,14 +36,8 @@ elseif strcmp(article_publisher,'Taylor_and_Francis')
     extrBetween_keys.title = {'',''};
 
 elseif strcmp(article_publisher,'Wiley')
-    extrBetween_keys.title = {'',''};
+    metadata = extrBetween_DB_WILEY(html_paper,url_link);
     
-elseif strcmp(article_publisher,'AGU_pubs')
-    extrBetween_keys.title = {'<meta property="og:title" content="','/>'};
-    extrBetween_keys.year = {'<meta name="citation_publication_date" content="','/'};
-    extrBetween_keys.journal = {'<meta name="citation_journal_title" content="','>'};
-    extrBetween_keys.articletype = '';
-    extrBetween_keys.authors = {'href="/action/doSearch?ContribAuthorStored=','">Search '};
     
 elseif strcmp(article_publisher,'MDPI')
     extrBetween_keys.title = {'',''};
@@ -292,14 +286,31 @@ end
 function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         
     title = extractBetween(html_paper,'<meta name="citation_title" content="','" />');
-    year = extractBetween(html_paper,'<meta name="citation_publication_date" content="','" />');
+    
+    year = extractBetween(html_paper,'class="epub-date">','</span></div>');
+    year = year(end-3:end);
+    
     journal = extractBetween(html_paper,'meta name="citation_journal_title" content="','" />');
-    article_type = extractBetween(html_paper,'<meta name="citation_article_type" content="','" />');
+    
+    article_type = 'not available';
+    
     authors_name = extractBetween(html_paper,'<meta name="citation_author" content="','>');
+    
     keywords = extractBetween(html_paper,'<meta name="citation_keywords" content="','>');
+    
     abstract = extractBetween(html_paper,'<div class="article-section__content en main">', '</div>');
+    
     highlights = 'not available';
     
      metadata = {title,year,journal,article_type,authors_name,keywords,abstract,highlights,url_link};
     
 end  
+
+function metadata = extrBetween_DB_WILEY(html_paper,url_link)
+    
+    extrBetween_keys.title = {'<meta property="og:title" content="','/>'};
+    extrBetween_keys.year = {'<meta name="citation_publication_date" content="','/'};
+    extrBetween_keys.journal = {'<meta name="citation_journal_title" content="','>'};
+    extrBetween_keys.articletype = '';
+    extrBetween_keys.authors = {'href="/action/doSearch?ContribAuthorStored=','">Search '};
+end
