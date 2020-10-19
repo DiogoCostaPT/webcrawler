@@ -88,8 +88,8 @@ for k = 1:numel(foldernames)
                             
                             % need to go to Science-Direct to retrieve the
                             % data
-                            html_data = safeDiogo_webread(publisher_url_decoded{:},pausetime);
-                            html_data = {publisherName,html_data};
+                            html_data_raw = safeDiogo_webread(publisher_url_decoded{:},pausetime);
+                            html_data = {publisherName,url_link,html_data_raw};
                             
                             found_flag = true;
 
@@ -129,6 +129,7 @@ for k = 1:numel(foldernames)
                         if sum(publisher_flag) == 1
                                 html_data = {publisherNames_and_snippets_all{...
                                             find(publisher_flag==1),1},...
+                                            url_link,...
                                             doi_html};
                                 found_flag = true;
                             else

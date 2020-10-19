@@ -53,7 +53,10 @@ end
 %% STEP 3: Extract paper info
 if ExtractInfoFromPapers_STEP_3_flag
 
-    ExtractInfoFromPapers_STEP_3(dir4search,by_country,folder_name_to_store_results,force_overwrite);
+    ExtractInfoFromPapers_STEP_3(dir4search,...
+                                by_country,...
+                                folder_name_to_store_results,...
+                                force_overwrite);
     
 end
 

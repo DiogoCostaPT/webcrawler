@@ -1,5 +1,8 @@
 
-function ExtractInfoFromPapers_STEP_3(dir4search,by_country,folder_name_to_store_results,force_overwrite)
+function ExtractInfoFromPapers_STEP_3(dir4search,...
+                                      by_country,...
+                                      folder_name_to_store_results,...
+                                      force_overwrite)
 
 
 foldernames = dir(dir4search); 
@@ -41,13 +44,14 @@ metadata_all_list = {};
        enter_1 = 1;
     end
  
-
+        
         if enter_1
             metadata = {};
+            metadata_i = '';
             
             %h = waitbar(0,'Extracting metadata for all papers...');
-            db_i =  strrep(foldernames{k},' ','%20');
-            dir_db = ['papers/',folder_name_to_store_results,'/',db_i];
+            %db_i =  strrep(foldernames{k},' ','%20');
+            dir_db = ['papers/',folder_name_to_store_results,'/',foldernames{k}];
             list_papers_raw = dir(dir_db);
            
             list_papers = {list_papers_raw.name};
@@ -59,13 +63,15 @@ metadata_all_list = {};
             for i = 1:1:numel(list_papers)
                 
                 if i == 1
-                %metadata_all_cell = {};
-                metadata_all_list = [metadata_all_list;{foldernames{k},'-','-','-','-','-','-','-','-','-'}];
+                    %metadata_all_cell = {};
+                    metadata_all_list = [metadata_all_list;{foldernames{k},'-','-','-','-','-','-','-','-','-'}];
                 end
 
                 list_papers_i = list_papers{i};
 
-                metadata_i = article_data_extract(dir_db,list_papers_i);
+                metadata_i = article_data_extract(dir_db,...
+                                                  list_papers_i);
+                
                 if ~isempty(metadata_i)
                     metadata = [metadata;metadata_i]; 
                 end  

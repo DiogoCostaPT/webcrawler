@@ -1,10 +1,10 @@
 
 % Extract data from article
-function metadata = article_data_extract(dir_db,list_papers_i)
+function metadata = article_data_extract(dir_db,...
+                                        list_papers_i)
 
     metadata = {};
-    
-    
+        
     try
         % url_link = 'https://www.sciencedirect.com/science/article/pii/S0013935119308928';
         %url_link = 'https://www.sciencedirect.com/science/article/pii/S0048969719351198';
@@ -17,8 +17,92 @@ function metadata = article_data_extract(dir_db,list_papers_i)
         return;
     end
     
-    % Parsing Varia
-    try
+    
+    article_publisher = html_data{1};
+    url_link = html_data{2};
+    html_paper = html_data{3};
+    
+    % Parsing Title
+        
+    if  strcmp(article_publisher,'Elsevier')
+        metadata = extrBetween_DB_ELSEVIER(html_paper,url_link);
+      
+    elseif strcmp(article_publisher,'Springer')
+        metadata = extrBetween_DB_SPRINGER(html_paper,url_link);
+        
+
+    
+elseif strcmp(article_publisher,'Taylor_and_Francis')
+    extrBetween_keys.title = {'',''};
+
+elseif strcmp(article_publisher,'Wiley')
+    extrBetween_keys.title = {'',''};
+    
+elseif strcmp(article_publisher,'AGU_pubs')
+    extrBetween_keys.title = {'<meta property="og:title" content="','/>'};
+    extrBetween_keys.year = {'<meta name="citation_publication_date" content="','/'};
+    extrBetween_keys.journal = {'<meta name="citation_journal_title" content="','>'};
+    extrBetween_keys.articletype = '';
+    extrBetween_keys.authors = {'href="/action/doSearch?ContribAuthorStored=','">Search '};
+    
+elseif strcmp(article_publisher,'MDPI')
+    extrBetween_keys.title = {'',''};
+    
+elseif strcmp(article_publisher,'AIMS_press')
+    extrBetween_keys.title = {'',''};
+    
+elseif strcmp(article_publisher,'ASABE')
+    extrBetween_keys.title = {'',''};    
+
+elseif strcmp(article_publisher,'CNKI')
+    extrBetween_keys.title = {'',''}; 
+    
+elseif strcmp(article_publisher,'Canadian_Science_Publishing')
+    extrBetween_keys.title = {'',''}; 
+    
+elseif strcmp(article_publisher,'Royal_Society_of Chemistry')
+    extrBetween_keys.title = {'',''}; 
+    
+elseif strcmp(article_publisher,'IWA publishing')
+    extrBetween_keys.title = {'',''}; 
+    
+elseif strcmp(article_publisher,'Sielo.br')
+    extrBetween_keys.title = {'',''}; 
+    
+elseif strcmp(article_publisher,'JEI online')
+    extrBetween_keys.title = {'',''}; 
+    
+    
+elseif strcmp(article_publisher,'Cambridge University Press')
+    extrBetween_keys.title = {'',''}; 
+    
+    
+elseif strcmp(article_publisher,'EGU Copernicus Publications')
+    extrBetween_keys.title = {'',''}; 
+    
+elseif strcmp(article_publisher,'Unkown_Publisher')
+    
+end
+    
+    
+   
+    
+end
+
+% Error message
+function ErrDispConsole(Param,list_papers_i)
+    errmsg = ['> WARNING: Problem in "',Param,'" in ',list_papers_i];
+    disp(errmsg);
+
+end
+
+
+% ELSEVIER parsing
+
+function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
+
+    
+     try
         
         title = extractBetween(html_data,'<meta name="citation_title" content="','" />');
     catch
@@ -193,19 +277,30 @@ function metadata = article_data_extract(dir_db,list_papers_i)
     end
     
      % get URL
-     start_key = '<link rel="canonical" href="';
-     url_link_init = strfind(html_data,start_key);
-     url_link = html_data(url_link_init+numel(start_key):end);
-     end_key = '" />';
-     url_link_end = strfind(url_link,end_key);
-     url_link = url_link(1:url_link_end(1)-1);     
+     %start_key = '<link rel="canonical" href="';
+     %url_link_init = strfind(html_data,start_key);
+     %url_link = html_data(url_link_init+numel(start_key):end);
+     %end_key = '" />';
+     %url_link_end = strfind(url_link,end_key);
+     %url_link = url_link(1:url_link_end(1)-1);     
 
     metadata = {title,year,journal,article_type,authors_name,keywords,abstract,highlights,url_link};
     
-end
-
-function ErrDispConsole(Param,list_papers_i)
-    errmsg = ['> WARNING: Problem in "',Param,'" in ',list_papers_i];
-    disp(errmsg);
 
 end
+
+function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
+        
+    title = extractBetween(html_paper,'<meta name="citation_title" content="','" />');
+    year = {'<meta name="citation_publication_date" content="','" />'};
+    journal = {'<meta name="citation_journal_title" content="','" />'};
+    article_type = {'<meta name="citation_article_type" content="','" />'};
+    %authors_name
+    %keywords =
+    %abstract = 
+    %highlights = 
+    %url_link = doi;
+    
+     metadata = {title,year,journal,article_type,authors_name,keywords,abstract,highlights,url_link};
+    
+end  
