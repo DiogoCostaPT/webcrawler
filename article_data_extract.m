@@ -292,14 +292,13 @@ end
 function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         
     title = extractBetween(html_paper,'<meta name="citation_title" content="','" />');
-    year = {'<meta name="citation_publication_date" content="','" />'};
-    journal = {'<meta name="citation_journal_title" content="','" />'};
-    article_type = {'<meta name="citation_article_type" content="','" />'};
-    %authors_name
-    %keywords =
-    %abstract = 
-    %highlights = 
-    %url_link = doi;
+    year = extractBetween(html_paper,'<meta name="citation_publication_date" content="','" />');
+    journal = extractBetween(html_paper,'meta name="citation_journal_title" content="','" />');
+    article_type = extractBetween(html_paper,'<meta name="citation_article_type" content="','" />');
+    authors_name = extractBetween(html_paper,'<meta name="citation_author" content="','>');
+    keywords = extractBetween(html_paper,'<meta name="citation_keywords" content="','>');
+    abstract = extractBetween(html_paper,'<div class="article-section__content en main">', '</div>');
+    highlights = 'not available';
     
      metadata = {title,year,journal,article_type,authors_name,keywords,abstract,highlights,url_link};
     

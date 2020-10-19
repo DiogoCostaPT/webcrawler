@@ -139,9 +139,14 @@ for k = 1:numel(foldernames)
 
 
                     if found_flag == false
-                       html_data = {'Unkown_Publisher',...
+                        msg = ['> WARNING: Unkown Publisher: ',url_link];
+                        formatid = ['%s',num2str(numel(msg)),'\n'];
+                        disp(msg); 
+                        fprintf(fd,formatid,msg);
+                    
+                        html_data = {'Unkown_Publisher',...
                                         doi_html};
-                       found_flag = true;
+                        found_flag = true;
                     end
                     
                      save([new_dir,'/',filename],'html_data');
