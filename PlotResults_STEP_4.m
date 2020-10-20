@@ -6,14 +6,14 @@ set(h,'Position', [500 300 280 70]);
 
 for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
-    %foldernames = dir(dir4search);  
-    %foldernames = {foldernames.name};
-    %foldernames(strcmp(foldernames,'.')) = [];
-    %foldernames(strcmp(foldernames,'..')) = [];
+    foldernames = dir(dir4search);  
+    foldernames = {foldernames.name};
+    foldernames(strcmp(foldernames,'.')) = [];
+    foldernames(strcmp(foldernames,'..')) = [];
 
         try
-           csvfile = [dir4search,'/metadata_all_list.csv'];
-           metadata_all_list_table = readtable(csvfile);
+           csvfile = [dir4search,'/',foldernames{k},'/metadata_all_list.csv'];
+           metadata_all_list_table = readtable(csvfile,'delimiter','bar');
         catch
            disp(['WARNING: ',csvfile,' file not found -> need to run first the extract_papers_info function'])
            return

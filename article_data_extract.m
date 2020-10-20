@@ -301,6 +301,18 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
     end
     if ~success_flag
         year = extractBetween(html_paper,'<meta name="dc.date" content="','-');
+        if ~isempty(year)
+            year = year{:};
+            success_flag = true;
+        end
+    end
+    if ~success_flag
+        year = extractBetween(html_paper,'<span class="article-date">','</span>');
+        if ~isempty(year)
+           year = year{:};
+            year = year(end-3:end);
+            success_flag = true;
+        end
     end
     if ~success_flag
        year = '99999'; 
@@ -314,7 +326,7 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
     article_type = 'not available';
     
     % Authors    
-    authors_name = extractBetween(html_paper,'<meta name="citation_author" content="','">');
+    authors_name = extractBetween(html_paper,'<meta name="citation_author" content="','"');
     
     %Keywords    
     keywords = extractBetween(html_paper,'<meta name="citation_keywords" content="','>');
