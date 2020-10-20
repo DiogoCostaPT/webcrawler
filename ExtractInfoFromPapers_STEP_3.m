@@ -57,6 +57,7 @@ metadata_all_list = {};
             list_papers = {list_papers_raw.name};
             list_papers(strcmp(list_papers,'.')) = [];
             list_papers(strcmp(list_papers,'..')) = [];
+            list_papers(contains(list_papers,'~')) = []; % temporary files in folder
             list_papers(strcmp(list_papers,'href_list.mat')) = [];
             list_papers(strcmp(list_papers,'metadata_this_folder.mat')) = [];
 

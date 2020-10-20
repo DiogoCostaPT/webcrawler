@@ -289,56 +289,113 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
     
    
     % Title
-    title = extractBetween(html_paper,'<meta name="citation_title" content="','"');
+    metadata_i = {};
+    NOT_FOUND_text = {'not found'};
     
-    % Year of publication
-    success_flag = false
-    year = extractBetween(html_paper,'class="epub-date">','</span></div>');
-    if ~isempty(year)
-        year = year{:};
-        year = year(end-3:end);
-        success_flag = true;
-    end
-    if ~success_flag
-        year = extractBetween(html_paper,'<meta name="dc.date" content="','-');
-        if ~isempty(year)
-            year = year{:};
-            success_flag = true;
+    struct_fields = {...
+                    'Paper_title',...           % 1
+                    'Year',...                  % 2
+                    'Journal_name',...          % 3
+                    'Type_of_Publication',...   % 4 - only available for ELSEVIER
+                    'Authors',...               % 5
+                    'Keywords',...              % 6
+                    'Abstract',...              % 7
+                    'Highlights',...            % 8
+                    'URL',...
+                    };
+    % 1) title
+    boundwords.(genvarname(struct_fields{1})) = {...
+        '<meta property="og:title" content="','"';...
+        '<meta name="citation_title" content="','"';... % most publishers
+        '<title>','</title>',... ACS pubs
+        };
+    % 2) Year
+    boundwords.(genvarname(struct_fields{2})) = {...
+        'class="epub-date">','</span></div>';...
+        'name="dc.Date" scheme="WTN8601" content="','"';...
+        'class="date-separator">:</span><span class="pub-date-value">','</span><div class="article_header-history';...
+        '<span class="article-date">','</span>';...
+        'name="citation_online_date" content="','/';...
+        'name="citation_publication_date" content="','"';...
+        '<meta name="DC.issued" content="','/';...
+        'id="param-dbname" value="CJFDLAST','"';...
+        'name="citation_date" content="','">';...
+        };
+    % 3) Journal name
+    boundwords.(genvarname(struct_fields{3})) = {...
+        'title="Journal cover:','" alt="" ';...
+        'meta name="citation_journal_title" content="','"';...
+        'name="citation_publication_date" content="','"';...
+        'name="citation_journal_title" content="','">';...
+        };
+    % 4) Type of publication
+    boundwords.(genvarname(struct_fields{4})) = {};
+    % 5) Authors
+    boundwords.(genvarname(struct_fields{5})) = {...
+        '<meta name="citation_author" content="','"';...
+        '<meta name="DC.Creator" content="','" />';...
+        '<meta name="dc.Creator" content="','" />';...
+        };
+    % 6) Keywords
+    boundwords.(genvarname(struct_fields{6})) = {...
+        '<meta name="citation_keywords" content="','>';...
+        };
+    % 7) Abstract
+    boundwords.(genvarname(struct_fields{7})) = {...
+        '<div class="article-section__content en main">','</p>';...
+        'id="Abs1-content"><p>','</p></div></div></section>';...
+        'rscart38">','</p>'};
+    % 8) Highlights
+    boundwords.(genvarname(struct_fields{8})) = {};
+                    
+    for f = 1:numel(struct_fields)
+        success_flag = false;
+        notFound_flag = false;
+        i = 0; 
+        while ~success_flag && ~notFound_flag
+            i = i + 1;
+            try
+                metadata_i.(genvarname(struct_fields{f})) = extractBetween(...
+                                    html_paper,...
+                                    boundwords.(genvarname(struct_fields{f}))(i,1),...
+                                    boundwords.(genvarname(struct_fields{f}))(i,2));
+                if ~isempty(metadata_i.(genvarname(struct_fields{f})))
+                    success_flag = true;
+                end
+            catch
+                notFound_flag = true;
+            end
+        end
+        if notFound_flag
+        	metadata_i.(genvarname(struct_fields{f})) = NOT_FOUND_text; 
         end
     end
-    if ~success_flag
-        year = extractBetween(html_paper,'<span class="article-date">','</span>');
-        if ~isempty(year)
-           year = year{:};
-            year = year(end-3:end);
-            success_flag = true;
-        end
+    
+    % 9) URL
+    metadata_i.(genvarname(struct_fields{9})) = url_link;
+    
+    % Extra steps for some cases
+    % year
+    index = 2;
+    if ~strcmp(metadata_i.(genvarname(struct_fields{index})),NOT_FOUND_text)
+        date = metadata_i.(genvarname(struct_fields{index})){:};
+        metadata_i.(genvarname(struct_fields{index})) =  {date(end-3:end)};
     end
-    if ~success_flag
-       year = '99999'; 
-    end
-    
-    % Journal 
-    success_flag = false;
-    journal = extractBetween(html_paper,'meta name="citation_journal_title" content="','">');
-    
-    % Article type (only available for ELSEVIER)
-    article_type = 'not available';
-    
-    % Authors    
-    authors_name = extractBetween(html_paper,'<meta name="citation_author" content="','"');
-    
-    %Keywords    
-    keywords = extractBetween(html_paper,'<meta name="citation_keywords" content="','>');
-    
     % Abstract
-    abstract = extractBetween(html_paper,'<div class="article-section__content en main">', '</div>');
-    abstract = extractBetween(abstract,'<p>','</p>');
-    
-    highlights = 'not available';
-    
-     metadata = {title,year,journal,article_type,authors_name,keywords,abstract,highlights,url_link};
-    
+    index = 7;
+    if ~strcmp(metadata_i.(genvarname(struct_fields{index})),NOT_FOUND_text)
+        if contains(metadata_i.(genvarname(struct_fields{index})),'<p>')
+            abst = metadata_i.(genvarname(struct_fields{index})){:};
+            metadata_i.(genvarname(struct_fields{index})) = {extractAfter(...
+                 abst,'<p>')};
+        end
+    end
+        
+    % Save results
+    metadata = cell(1,numel(struct_fields));
+    for f = 1:numel(struct_fields)
+        metadata{f} = metadata_i.(genvarname(struct_fields{f}));
+    end
 end  
 
 %{
