@@ -81,9 +81,6 @@ metadata_all_list = {};
                             ['Paper: ', num2str(i),' out of ',num2str(numel(list_papers))]});
             end
             if ~isempty(metadata)
-                if contains(db_i,'%20AND%20')
-                    db_i = extractAfter(db_i,'%20AND%20');               
-                end
                 add_new_dataset = [cell(numel(metadata(:,1)),1),metadata];
                 metadata_all_list = [metadata_all_list;add_new_dataset];
                 add_new_dataset_to_print = add_new_dataset(:,2:end);
@@ -110,7 +107,7 @@ metadata_all_list = {};
                                                         'URL'
                                                         };
     
-    writetable(metadata_all_list_table,[dir4search,'/metadata_all_list',addwordi,'.csv'],'Delimiter',';'); 
+    writetable(metadata_all_list_table,[dir4search,'/',foldernames{k},'/metadata_all_list',addwordi,'.csv'],'Delimiter',';'); 
     
         end
     end
