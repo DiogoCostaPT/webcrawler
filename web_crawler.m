@@ -45,10 +45,10 @@ main_keyword_searchengine_raw_multiple =[
 RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to Science-Direct server
 
 % STEP 2                                  
-RequestPapersFromList_STEP_2_flag = true; % carefull -> it will send requests to Science-Direct server
+RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
 
 % STEP 3
-ExtractInfoFromPapers_STEP_3_flag = false; 
+ExtractInfoFromPapers_STEP_3_flag = true; 
 force_overwrite = true;
 
 % STEP 4

@@ -27,11 +27,12 @@ function metadata = article_data_extract(dir_db,...
     if  strcmp(article_publisher,'Elsevier')
         metadata = extrBetween_DB_ELSEVIER(html_paper,url_link);
       
-    elseif strcmp(article_publisher,'Springer')
+    else 
         metadata = extrBetween_DB_SPRINGER(html_paper,url_link);
+    end
         
 
-    
+   %{ 
 elseif strcmp(article_publisher,'Taylor_and_Francis')
     extrBetween_keys.title = {'',''};
 
@@ -77,6 +78,7 @@ elseif strcmp(article_publisher,'EGU Copernicus Publications')
 elseif strcmp(article_publisher,'Unkown_Publisher')
     
 end
+    %}
     
     
    
@@ -110,21 +112,21 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
     catch
         year = 'not available';
         Param = 'year';
-        ErrDispConsole(Param,list_papers_i);
+        ErrDispConsole(Param,url_link);
     end
     try   
         journal = extractBetween(html_data,'<meta name="citation_journal_title" content="','" />');
     catch
         journal = 'not available';
         Param = 'journal';
-        ErrDispConsole(Param,list_papers_i);
+        ErrDispConsole(Param,url_link);
     end
     try
         article_type = extractBetween(html_data,'<meta name="citation_article_type" content="','" />');
     catch
         article_type = 'not available';
         Param = 'article_type';
-        ErrDispConsole(Param,list_papers_i);
+        ErrDispConsole(Param,url_link);
     end
     
     
@@ -147,7 +149,7 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
     catch
         authors_name = 'not available';
         Param = 'authors_name';
-        ErrDispConsole(Param,list_papers_i);
+        ErrDispConsole(Param,url_link);
     end
     
     try
@@ -166,7 +168,7 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
     catch
         keywords = 'not available';
         Param = 'keywords';
-        ErrDispConsole(Param,list_papers_i);
+        ErrDispConsole(Param,url_link);
     end
     
     %Extract highlights
@@ -219,14 +221,14 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
       else
          highlights = 'not available';
         Param = 'highlights';
-         ErrDispConsole(Param,list_papers_i);
+         ErrDispConsole(Param,url_link);
          num_highlights = 0;
       end
       
      catch
         highlights = 'not available';
         Param = 'highlights';
-         ErrDispConsole(Param,list_papers_i);
+         ErrDispConsole(Param,url_link);
          num_highlights = 0;
      end
     
@@ -267,7 +269,7 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
     catch
         abstract = 'not available';
         Param = 'abstract';
-        ErrDispConsole(Param,list_papers_i);
+        ErrDispConsole(Param,url_link);
     end
     
      % get URL
@@ -284,21 +286,42 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
 end
 
 function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
-        
-    title = extractBetween(html_paper,'<meta name="citation_title" content="','" />');
     
+   
+    % Title
+    title = extractBetween(html_paper,'<meta name="citation_title" content="','"');
+    
+    % Year of publication
+    success_flag = false
     year = extractBetween(html_paper,'class="epub-date">','</span></div>');
-    year = year(end-3:end);
+    if ~isempty(year)
+        year = year{:};
+        year = year(end-3:end);
+        success_flag = true;
+    end
+    if ~success_flag
+        year = extractBetween(html_paper,'<meta name="dc.date" content="','-');
+    end
+    if ~success_flag
+       year = '99999'; 
+    end
     
-    journal = extractBetween(html_paper,'meta name="citation_journal_title" content="','" />');
+    % Journal 
+    success_flag = false;
+    journal = extractBetween(html_paper,'meta name="citation_journal_title" content="','">');
     
+    % Article type (only available for ELSEVIER)
     article_type = 'not available';
     
-    authors_name = extractBetween(html_paper,'<meta name="citation_author" content="','>');
+    % Authors    
+    authors_name = extractBetween(html_paper,'<meta name="citation_author" content="','">');
     
+    %Keywords    
     keywords = extractBetween(html_paper,'<meta name="citation_keywords" content="','>');
     
+    % Abstract
     abstract = extractBetween(html_paper,'<div class="article-section__content en main">', '</div>');
+    abstract = extractBetween(abstract,'<p>','</p>');
     
     highlights = 'not available';
     
@@ -306,6 +329,7 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
     
 end  
 
+%{
 function metadata = extrBetween_DB_WILEY(html_paper,url_link)
     
     extrBetween_keys.title = {'<meta property="og:title" content="','/>'};
@@ -314,3 +338,4 @@ function metadata = extrBetween_DB_WILEY(html_paper,url_link)
     extrBetween_keys.articletype = '';
     extrBetween_keys.authors = {'href="/action/doSearch?ContribAuthorStored=','">Search '};
 end
+%}
