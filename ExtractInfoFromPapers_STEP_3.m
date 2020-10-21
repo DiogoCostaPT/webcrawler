@@ -25,7 +25,7 @@ metadata_all_list = {};
 
 
     if by_country
-        addwordi = "_by_cou0ntry";
+        addwordi = '_by_cou0ntry';
     else
         addwordi = '';
     end
@@ -88,12 +88,6 @@ metadata_all_list = {};
                 save([dir4search,'/',foldernames{k},'/metadata_this_folder',addwordi,'.mat'],'add_new_dataset_to_print'); 
             end
 
-        
-    if by_country
-        addwordi = '_by_country';
-    else
-        addwordi = '';
-    end
     %save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list'); 
     metadata_all_list_table = cell2table(metadata_all_list);
     metadata_all_list_table.Properties.VariableNames = {'Search_Keys',...

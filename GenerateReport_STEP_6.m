@@ -31,11 +31,11 @@ for p = 1:numel(foldernames)
              for i=1:numel(intervals4easchsearch)-1
                  index_order = [index_order;intervals4easchsearch(i)];
                  range_i_years = allyears(intervals4easchsearch(i)+1:intervals4easchsearch(i+1)-1);
-                 [range_i_years_order range_i_years_order_loc]= sort(range_i_years,'descend');
+                 [range_i_years_order, range_i_years_order_loc]= sort(range_i_years,'descend');
                  index_order = [index_order;intervals4easchsearch(i)+range_i_years_order_loc];
              end
          else  % no coutry analysis
-              [range_i_years_order range_i_years_order_loc]= sort(allyears,'descend');
+              [range_i_years_order, range_i_years_order_loc]= sort(allyears,'descend');
               index_order = range_i_years_order_loc;
          end
          
@@ -53,18 +53,19 @@ for p = 1:numel(foldernames)
              add_text = '';
          end
          
+         add_row = 0;
          for r=1:numel(metadata_all_list_table(:,1))
              try
                  i = index_order(r);
              catch
                  continue
-             end     
-                         
+             end  
+                              
             paper_table_i = metadata_all_list_table(i,:);
             
             if ~isempty(char(paper_table_i.Search_Keys))
                 
-                
+                               
                  if flag_general_country == 0
                     fid=fopen([dir4search,'/GENERAL_report_',folder_name_to_store_results,add_text,'.docx'],'w');
                     flag_general_country = 1;
@@ -75,6 +76,8 @@ for p = 1:numel(foldernames)
                         flag_open_countryonce = 1;
                      end
                  end
+                 
+                 add_row = add_row + 1;
                 
                  fprintf(fid, '%s\n', '===================================================================================');
                  %print_searchwords = strrep(char(paper_table_i.Search_Keys),'%20',' ');
@@ -87,6 +90,8 @@ for p = 1:numel(foldernames)
                 fprintf(fid, '%s\n','');
                 itemnum_local = 0;
             else
+                
+                 item_metadata_i = i - add_row;
                 
                 itemnum_global = itemnum_global + 1;
                 itemnum_local = itemnum_local + 1;
@@ -136,8 +141,11 @@ for p = 1:numel(foldernames)
                 
                 % Print search words
                 fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
-                fprintf(fid, '%s\n\t', ['SEARCH WORDS: ', main_keyword_searchengine_raw_multiple{p}]);
-                fprintf(fid, '%s\n', ['  item: ', num2str(itemnum_local)]);
+                fprintf(fid, '%s\n\n', ['SEARCH WORDS: ', main_keyword_searchengine_raw_multiple{p}]);
+                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
+                fprintf(fid, '%s\n', ['# item: ', num2str(itemnum_local)]);
+                fprintf(fid, '%s\n', ['# web-crawler trace item (metadata_i, STEP 3): row ', num2str(item_metadata_i)]);
+                fprintf(fid, '%s\n', ['# web-crawler trace item (metadata_all_list_table, STEP 6): row ', num2str(i)]);
                 fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
                 fprintf(fid, '%s\f', '');
                 
