@@ -108,7 +108,8 @@ metadata_all_list = {};
                                                         'URL'
                                                         };
     
-    writetable(metadata_all_list_table,[dir4search,'/',foldernames{k},'/metadata_all_list',addwordi,'.csv'],'Delimiter','bar'); 
+    %metadata_all_list_table = strrep(metadata_all_list_table,'|','');                                                
+    writetable(metadata_all_list_table,[dir4search,'/',foldernames{k},'/metadata_all_list',addwordi,'.csv'],'Delimiter',';'); 
     
         end
     end

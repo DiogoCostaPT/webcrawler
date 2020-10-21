@@ -17,7 +17,7 @@ main_keyword_searchengine_raw_multiple =[
                                         ' AND NOT (*coral* OR *reef* OR *sea* OR *ocean*)',...
                                         ' AND NOT (*urban* OR *highway* OR "treatment plant" OR *roof*)',...
                                         ')',...
-%                                        ' AND TITLE-ABS(country_placeholder)'...
+                                        ' AND TITLE-ABS(country_placeholder)'...
                                         ];
                                       
 
@@ -48,11 +48,11 @@ RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to 
 RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
 
 % STEP 3
-ExtractInfoFromPapers_STEP_3_flag = true; 
+ExtractInfoFromPapers_STEP_3_flag = false; 
 force_overwrite = true;
 
 % STEP 4
-PlotResults_STEP_4_flag = false; %1) # papers and keywords
+PlotResults_STEP_4_flag = true; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};

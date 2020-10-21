@@ -1,17 +1,27 @@
 
-function GenerateReport_STEP_6(dir4search,only_title_and_highlights,folder_name_to_store_results)
-
+function GenerateReport_STEP_6(main_keyword_searchengine_raw_multiple,...
+    dir4search,...
+    only_title_and_highlights,...
+    folder_name_to_store_results)
   
+foldernames = dir(dir4search); 
+dirFlags = [foldernames.isdir];
+foldernames = foldernames(dirFlags);
+foldernames = {foldernames.name};
+foldernames(strcmp(foldernames,'.')) = [];
+foldernames(strcmp(foldernames,'..')) = [];
+
+for p = 1:numel(foldernames)
+
      try
-           csvfile = [dir4search,'/metadata_all_list.csv'];
-           metadata_all_list_table = readtable(csvfile);
+           csvfile = [dir4search,'/',foldernames{p},'/metadata_all_list.csv'];
+           metadata_all_list_table = readtable(csvfile,'delimiter',';');
       catch
            
         disp(['WARNING: ',metadata_all_list_table,' file not found -> need to run first the extract_papers_info function'])
     return;
      end
-        
-                                      
+
          % order the entries by year, but respecting the different search
          % words
          intervals4easchsearch = find(~cellfun(@isempty,table2cell(metadata_all_list_table(:,1))));
@@ -67,8 +77,8 @@ function GenerateReport_STEP_6(dir4search,only_title_and_highlights,folder_name_
                  end
                 
                  fprintf(fid, '%s\n', '===================================================================================');
-                 print_searchwords = strrep(char(paper_table_i.Search_Keys),'%20',' ');
-                 fprintf(fid, '%s\n\t', ['---->	SEARCH WORDS -> ',print_searchwords]);
+                 %print_searchwords = strrep(char(paper_table_i.Search_Keys),'%20',' ');
+                 fprintf(fid, '%s\n\t', ['---->	SEARCH WORDS -> ',main_keyword_searchengine_raw_multiple{p}]);
                  if only_title_and_highlights
                      fprintf(fid, '%s\n\t', 'Simplified report: only title and highlights');
                  end
@@ -85,10 +95,13 @@ function GenerateReport_STEP_6(dir4search,only_title_and_highlights,folder_name_
                 fprintf(fid, '%s\n','%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
                 fprintf(fid, '%s\n',['ITEM_',num2str(itemnum_global)]);
                 fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
-                writetext = [upper(paper_table_i.Type_of_Publication{:}),' (Year: ',paper_table_i.Year{:},')'];
+                writetext = ['Publication/article type: ',upper(paper_table_i.Type_of_Publication{:}),' (Year: ',paper_table_i.Year{:},')'];
                 fprintf(fid, '%s\n\n', writetext);
                 writetext = paper_table_i.Paper_title{:};
                 fprintf(fid, '%s\n\n', writetext);
+                fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
+                writetext = ['Authors: ',paper_table_i.Authors{:}];
+                fprintf(fid, '%s\n', writetext);
                 fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
                 fprintf(fid, '%s\n', 'Highlights: ');
                 
@@ -123,7 +136,7 @@ function GenerateReport_STEP_6(dir4search,only_title_and_highlights,folder_name_
                 
                 % Print search words
                 fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
-                fprintf(fid, '%s\n\t', ['SEARCH WORDS: ', print_searchwords]);
+                fprintf(fid, '%s\n\t', ['SEARCH WORDS: ', main_keyword_searchengine_raw_multiple{p}]);
                 fprintf(fid, '%s\n', ['  item: ', num2str(itemnum_local)]);
                 fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
                 fprintf(fid, '%s\f', '');
@@ -137,4 +150,5 @@ function GenerateReport_STEP_6(dir4search,only_title_and_highlights,folder_name_
          catch
          end
          close(h1);
+end
          

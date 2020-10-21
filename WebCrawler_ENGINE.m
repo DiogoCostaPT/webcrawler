@@ -38,7 +38,13 @@ end
 %% STEP 1: EXTRACT LIST OF PAPERS
 if RetrieveListPapers_STEP_1_flag
     
-    RetrieveListPapers_STEP_1(myScopusApiKey,by_country,main_keyword_searchengine_raw_multiple,num_search_pages,pausetime,show,dir4search);
+    RetrieveListPapers_STEP_1(myScopusApiKey,...
+        by_country,...
+        main_keyword_searchengine_raw_multiple,...
+        num_search_pages,...
+        pausetime,...
+        show,...
+        dir4search);
 
 end
 
@@ -63,7 +69,8 @@ end
 %% Plot results
 if PlotResults_STEP_4_flag
 
-    PlotResults_STEP_4(main_keyword_searchengine_raw_multiple,dir4search);
+    PlotResults_STEP_4(main_keyword_searchengine_raw_multiple,...
+        dir4search);
     
 end
     
@@ -71,14 +78,18 @@ end
 %%
 if PlotMaps_STEP_5_flag
     
-    PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple);
+    PlotMaps_STEP_5(dir4search,...
+        main_keyword_searchengine_raw_multiple);
    
 end
 
 % Generate report
 if GenerateReport_STEP_6_flag
   
-    GenerateReport_STEP_6(dir4search,only_title_and_highlights,folder_name_to_store_results);
+    GenerateReport_STEP_6(main_keyword_searchengine_raw_multiple,...
+        dir4search,...
+        only_title_and_highlights,...
+        folder_name_to_store_results);
     
 end
 
