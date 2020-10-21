@@ -61,7 +61,7 @@ filter_papers_keywords = {}; % if don't want to
 PlotMaps_STEP_5_flag = false;
 
 % STEP 6
-GenerateReport_STEP_6_flag = false;
+GenerateReport_STEP_6_flag = true;
 only_title_and_highlights = false;
 
 

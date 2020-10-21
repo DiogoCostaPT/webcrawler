@@ -80,9 +80,6 @@ elseif strcmp(article_publisher,'Unkown_Publisher')
 end
     %}
     
-    
-   
-    
 end
 
 % Error message
@@ -108,7 +105,7 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
     end
     try
         year = extractBetween(html_data,'<meta name="citation_publication_date" content="','" />');
-        year = extractBefore(year,'/');
+        year = str2double(extractBefore(year,'/'));
     catch
         year = 'not available';
         Param = 'year';
@@ -230,39 +227,31 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
         % Abstract (some html code remains at the start, but should not be
         % problematic)
         start_key = 'class="Abstracts';
-        abstract_s = strfind(html_data,start_key);
-        abstract_cut = html_data(abstract_s+numel(start_key):end);
+        %abstract_s = strfind(html_data,start_key);
+        %abstract_cut = html_data(abstract_s+numel(start_key):end);
         %other_key = 'abstract-sec';
         %abstract_s = strfind(abstract_cut,other_key);
         %abstract_cut = abstract_cut(numel(other_key)+abstract_s(1):end);
-                
-        end_key = '</p>';
-        abstract_s = strfind(abstract_cut,end_key);
         
+        end_key = '</p></div></div></div><ul';
+        abstract_cut = extractBetween(html_data,start_key,end_key);
+                
         % If there are highlights, the html changes a bit
         if num_highlights == 0
-            start_i = 1;
-            end_i = abstract_s(1)-1;
+            abstract = extractAfter(abstract_cut,'<p>');
         else
-            start_i = abstract_s(num_highlights+1);
-            end_i = abstract_s(num_highlights+2);  
-        end
-        abstract_cut = abstract_cut(start_i:end_i);
-        
-        find_textstart = '">';
-        abstract_s = strfind(abstract_cut,find_textstart);
-        abstract_cut = abstract_cut(abstract_s(end)+numel(find_textstart):end);
-       
-        abstract = erase(abstract_cut,'<p>');
-        if strcmp(abstract(end),'<')
-            abstract = abstract(1:end-1);
+            abstract_cut = extractAfter(abstract_cut,'u-margin-xs-bottom">Abstract</h2><div'); 
+            abstract_cut = extractAfter(abstract_cut,'">');
+            abstract = extractAfter(abstract_cut,'">');
         end
         
     catch
-        abstract = 'not found';
+        abstract = {'not found'};
         Param = 'abstract';
         ErrDispConsole(Param,url_link);
     end
+    
+    abstract = abstract{:};
     
      % get URL
      %start_key = '<link rel="canonical" href="';
@@ -411,8 +400,7 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
     if ~strcmp(metadata_i.(genvarname(struct_fields{index})),NOT_FOUND_text)
         if contains(metadata_i.(genvarname(struct_fields{index})),'<p>')
             abst = metadata_i.(genvarname(struct_fields{index})){:};
-            metadata_i.(genvarname(struct_fields{index})) = {extractAfter(...
-                 abst,'<p>')};
+            temp = {extractAfter(abst,'<p>')};
         end
     end
     

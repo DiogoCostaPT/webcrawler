@@ -14,18 +14,21 @@ foldernames(strcmp(foldernames,'..')) = [];
 for p = 1:numel(foldernames)
 
      try
-           csvfile = [dir4search,'/',foldernames{p},'/metadata_all_list.csv'];
-           metadata_all_list_table = readtable(csvfile,'delimiter',';');
+           matmetadata_file = [dir4search,'/',foldernames{p},'/metadata_all_list.mat'];
+           load(matmetadata_file);
+           %metadata_all_list_table = readtable(matmetadatafile,'delimiter',';');
       catch
            
-        disp(['WARNING: ',metadata_all_list_table,' file not found -> need to run first the extract_papers_info function'])
-    return;
+        disp(['WARNING: ',matmetadata_file,' file not found -> need to run first the extract_papers_info function'])
+        return;
      end
 
          % order the entries by year, but respecting the different search
          % words
          intervals4easchsearch = find(~cellfun(@isempty,table2cell(metadata_all_list_table(:,1))));
-         allyears = str2double(metadata_all_list_table.Year);
+         allyears = metadata_all_list_table.Year;
+         allyears(strcmp(allyears,'-')) = {9999};
+         allyears = [allyears{:}]';
          index_order = [];
          if numel(intervals4easchsearch) > 1 % whith country analysis
              for i=1:numel(intervals4easchsearch)-1
@@ -63,7 +66,7 @@ for p = 1:numel(foldernames)
                               
             paper_table_i = metadata_all_list_table(i,:);
             
-            if ~isempty(char(paper_table_i.Search_Keys))
+            if ~isempty(paper_table_i.Search_Keys{:})
                 
                                
                  if flag_general_country == 0
@@ -100,7 +103,7 @@ for p = 1:numel(foldernames)
                 fprintf(fid, '%s\n','%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
                 fprintf(fid, '%s\n',['ITEM_',num2str(itemnum_global)]);
                 fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
-                writetext = ['Publication/article type: ',upper(paper_table_i.Type_of_Publication{:}),' (Year: ',paper_table_i.Year{:},')'];
+                writetext = ['Publication/article type: ',upper(paper_table_i.Type_of_Publication{:}),' (Year: ',num2str(paper_table_i.Year{:}),')'];
                 fprintf(fid, '%s\n\n', writetext);
                 writetext = paper_table_i.Paper_title{:};
                 fprintf(fid, '%s\n\n', writetext);
@@ -111,13 +114,14 @@ for p = 1:numel(foldernames)
                 fprintf(fid, '%s\n', 'Highlights: ');
                 
                 % add highlights
-                for h = 1:numel(metadata_all_list_table(1,9:end-1))
-                     writetext = char(metadata_all_list_table{i,8+h});
-                     writetext = strtrim(writetext);
-                     if ~isempty(writetext)
-                        fprintf(fid, '%s\n', ['- ',writetext]);
+                
+                 writetext = char(metadata_all_list_table{i,9});
+                 writetext = strtrim(writetext);
+                 if ~isempty(writetext)
+                     for g = 1: numel(writetext(:,1))
+                        fprintf(fid, '%s\n', ['- ',writetext(g,:)]);
                      end
-                end
+                 end
                 fprintf(fid, '%s\n','');
                 
                 if ~only_title_and_highlights
@@ -125,7 +129,12 @@ for p = 1:numel(foldernames)
                     fprintf(fid, '%s','');
                     fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
                     fprintf(fid, '%s\n', 'Abstract: ');
-                    writetext = char(metadata_all_list_table{i,8});
+                    writetext = metadata_all_list_table{i,8};
+                    writetext = writetext{:};
+                    try 
+                        writetext = writetext{:};
+                    catch
+                    end
                     writetext = strtrim(writetext);
                     fprintf(fid, '%s','');
                     fprintf(fid, '%s\n', writetext);

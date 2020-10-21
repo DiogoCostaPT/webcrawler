@@ -103,7 +103,7 @@ metadata_all_list = {};
                                                         };
     
     %metadata_all_list_table = strrep(metadata_all_list_table,'|','');                                                
-    writetable(metadata_all_list_table,[dir4search,'/',foldernames{k},'/metadata_all_list',addwordi,'.csv'],'Delimiter',';'); 
+    save([dir4search,'/',foldernames{k},'/metadata_all_list',addwordi,'.mat'],'metadata_all_list_table'); 
     
         end
     end
