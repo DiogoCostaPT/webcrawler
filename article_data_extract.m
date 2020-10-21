@@ -131,17 +131,16 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
     
     
     try
-        % Parsing Author names
-        start_key = '"#name":"given-name","_":"';
-        
+        % Parsing Author names       
         auth_givenName = extractBetween(html_data,'given-name">','<');
         auth_surname = extractBetween(html_data,'surname">','<');
         
-        authors_name = {};
+        authors_name = [];
         for i = 1:numel(auth_givenName)
             authors_name_i = [auth_givenName{i},' ',auth_surname{i}];
-            authors_name = [authors_name;authors_name_i]; 
+            authors_name = [authors_name,authors_name_i,', ']; 
         end
+        authors_name = authors_name(1:end-2);
 
     catch
         authors_name = 'not available';
@@ -151,17 +150,13 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
     
     try
         % Parsing Keywords
-        start_key = 'keyword"><span>';
-        keyword_s = strfind(html_data,start_key) + numel(start_key);
-        keywords = [];
-        for i = 1:numel(keyword_s)
-            temp = strfind(html_data(keyword_s(i):end),'</span>');
-            keyword_e = temp(1);
-            keyword_i = html_data(keyword_s(i):keyword_s(i) + keyword_e - 2);
-            keywords_i_clean = to_lowercase_and_put_singular(keyword_i); % clean up (all lower case and singular)
-            keywords = [keywords,keywords_i_clean];
-            if i~=numel(keyword_s) keywords = [keywords,', '];end
+        keywords_raw = extractBetween(html_data,'class="keyword"><span','</span></div><div');
+        keywords = extractAfter(keywords_raw{1},'>');
+        for i = 2:numel(keywords_raw)
+            keyword_i = extractAfter(keywords_raw{i},'>');        
+            keywords = [keywords,', ',keyword_i];
         end
+        
     catch
         keywords = 'not available';
         Param = 'keywords';
@@ -216,14 +211,14 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
           
           
       else
-         highlights = 'not available';
+         highlights = 'not found';
         Param = 'highlights';
          ErrDispConsole(Param,url_link);
          num_highlights = 0;
       end
       
      catch
-        highlights = 'not available';
+        highlights = 'not found';
         Param = 'highlights';
          ErrDispConsole(Param,url_link);
          num_highlights = 0;
@@ -264,7 +259,7 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
         end
         
     catch
-        abstract = 'not available';
+        abstract = 'not found';
         Param = 'abstract';
         ErrDispConsole(Param,url_link);
     end
@@ -287,7 +282,7 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
    
     % Title
     metadata_i = {};
-    NOT_FOUND_text = {'not found'};
+    NOT_FOUND_text = 'not found';
     
     struct_fields = {...
                     'Paper_title',...           % 1
@@ -338,11 +333,16 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         };
     % 6) Keywords
     boundwords.(genvarname(struct_fields{6})) = {...
-        '<meta name="citation_keywords" content="','>';...
+        '<meta name="citation_keywords" content="','">';...
         'name="keywords" content="','"';...
         'data-keyword="&quot;','&quot';...
         'data-keywords="','"></div>';...
         '<p><i><b>Keywords</b></i>','</p>';...
+        '"Keywords":"','"';...
+        'href="/action/doSearch?ConceptID=','">';...
+        'TurnPageToKnetV(''kw'',''',''',';...
+        'sans-serif"><b>Keywords:</b> ','</font></p>';...
+        '<a href="/search/keyword/','"';...
         };
     % 7) Abstract
     boundwords.(genvarname(struct_fields{7})) = {...
@@ -361,6 +361,8 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         '<section class="abstract"><p>','</p></section>';...
         '<div class="art-abstract in-tab hypothesis_container">',' <a href';...
         '<meta name="DC.Description" xml:lang="en" content="','"/>';...
+        'name="citation_abstract" content="&lt;p&gt;&lt;strong&gt;Abstract.&lt;/strong&gt;','&lt;/p&gt;"/>';...
+        '<meta name="description" content="','"/>';...
         };
     % 8) Highlights
     boundwords.(genvarname(struct_fields{8})) = {};
@@ -410,6 +412,40 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         end
     end
     
+     % Authors
+    index = 5;
+    authors = metadata_i.(genvarname(struct_fields{index}));
+    if iscell(authors)
+        metadata_i.(genvarname(struct_fields{index})) = '';
+        authors_i = '';
+        authors_all = authors{i}; 
+        for i = 2:numel(authors)
+            authors_all = [authors_all,', ',authors{i}]; 
+        end
+    end
+    metadata_i.(genvarname(struct_fields{index})) = authors_all;
+    
+    % Keywords
+    index = 6;
+    keywords = metadata_i.(genvarname(struct_fields{index}));
+    if iscell(keywords)
+        metadata_i.(genvarname(struct_fields{index})) = '';
+        concowords = [];
+        for i = 1:numel(keywords)
+            keyword_i = keywords{i};
+            if contains(keyword_i,'=')
+                keyword_i = extractAfter(keyword_i,'=');
+            end
+            concowords = [concowords,keyword_i,', '];
+        end
+    else
+        concowords = keywords;
+    end
+    concowords = strrep(concowords,'"','');
+    if strcmp(concowords,'') || strcmp(concowords,', ') || strcmp(concowords,'"') || strcmp(concowords,NOT_FOUND_text)
+        concowords = [NOT_FOUND_text,'  ']; 
+    end
+    metadata_i.(genvarname(struct_fields{index})) = concowords(1:end-2); 
         
     % Save results
     metadata = cell(1,numel(struct_fields));
