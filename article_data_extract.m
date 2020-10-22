@@ -233,17 +233,31 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
         %abstract_s = strfind(abstract_cut,other_key);
         %abstract_cut = abstract_cut(numel(other_key)+abstract_s(1):end);
         
-        end_key = '</p></div></div></div><ul';
+        end_key = '</p></div></div></div'; 
+                  
         abstract_cut = extractBetween(html_data,start_key,end_key);
+        
                 
         % If there are highlights, the html changes a bit
         if num_highlights == 0
-            abstract = extractAfter(abstract_cut,'<p>');
+            if strfind(abstract_cut{:},'</p></div></div><div')
+                abstract_cut = extractBefore(abstract_cut,'</p></div></div><div');
+            end
+            temp = abstract_cut{:}
+            loc = strfind(temp,'">');
+            abstract_cut = temp(loc(end)+2:end);
+            abstract = {abstract_cut};
+            %abstract_cut = extractAfter(abstract_cut,'<p>');
         else
             abstract_cut = extractAfter(abstract_cut,'u-margin-xs-bottom">Abstract</h2><div'); 
             abstract_cut = extractAfter(abstract_cut,'">');
             abstract = extractAfter(abstract_cut,'">');
+             if strfind(abstract{:},'</p></div></div><div')
+                abstract = extractBefore(abstract,'</p></div></div><div');
+            end
         end
+        
+       
         
     catch
         abstract = {'not found'};
@@ -289,7 +303,7 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         '/><meta name="dc.Title" content="','"';...
         '<meta property="og:title" content="','"';...
         '<meta name="citation_title" content="','"';... % most publishers
-        '<title>',' - ';...
+        %'<title>',' - ';...
         '<title>','</title>',... ACS pubs
         };
     % 2) Year
@@ -346,7 +360,7 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         'class="summary-title"><b>Abstract</b></p><p>','</p></div></div><div';...
         'class="summary-title"><b>Abstract</b></p><p>','<';...
         'class="summary-title"><b>ABSTRACT</b></p>','</p>';...
-        'roperty="name">Abstract</h2><div role="paragraph">','<';...
+        'property="name">Abstract</h2><div role="paragraph">','</div></section><section';...
         'class="abstract-text">','<';...
         'face="Verdana, Arial, Helvetica, sans-serif"><b>ABSTRACT</b></font></p>     <p><font size="2" face="Verdana, Arial, Helvetica, sans-serif">','</font></p>';...
         '<abstract><p><b><sc>Abstract. </sc></b>','</p>"/>';...
@@ -400,7 +414,15 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
     if ~strcmp(metadata_i.(genvarname(struct_fields{index})),NOT_FOUND_text)
         if contains(metadata_i.(genvarname(struct_fields{index})),'<p>')
             abst = metadata_i.(genvarname(struct_fields{index})){:};
-            temp = {extractAfter(abst,'<p>')};
+            metadata_i.(genvarname(struct_fields{index})) = {extractAfter(abst,'<p>')};
+        end
+        if contains(metadata_i.(genvarname(struct_fields{index})),'<a')
+            abst = metadata_i.(genvarname(struct_fields{index})){:};
+            metadata_i.(genvarname(struct_fields{index})) = {extractBefore(abst,'<a')};
+        end
+         if contains(metadata_i.(genvarname(struct_fields{index})),'</div>')
+            abst = metadata_i.(genvarname(struct_fields{index})){:};
+            metadata_i.(genvarname(struct_fields{index})) = {extractBefore(abst,'</div>')};
         end
     end
     
