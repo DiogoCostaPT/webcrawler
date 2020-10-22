@@ -60,7 +60,8 @@ metadata_all_list = {};
             list_papers(contains(list_papers,'~')) = []; % temporary files in folder
             list_papers(strcmp(list_papers,'href_list.mat')) = [];
             list_papers(strcmp(list_papers,'metadata_this_folder.mat')) = [];
-
+            list_papers(strcmp(list_papers,'metadata_all_list.mat')) = [];
+            
             for i = 1:1:numel(list_papers)
                 
                 if i == 1

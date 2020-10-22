@@ -6,8 +6,7 @@ function RequestPapersFromList_STEP_2(dir4search,pausetime)
 
 foldernames = dir(dir4search);  
 foldernames = {foldernames.name};
-foldernames(strcmp(foldernames,'.')) = [];
-foldernames(strcmp(foldernames,'..')) = [];
+foldernames(contains(foldernames,'.')) = [];
     
 h = waitbar(0,'Extracting papers from lists - HTML (STEP 2)');
 set(h,'Position', [500 300 280 70]);

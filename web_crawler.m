@@ -1,9 +1,7 @@
 
 
-
-%folder_name_to_store_results = 'nutrients_AND_climate_change';
-%main_keyword_searchengine_raw_multiple = {'"nutrients" AND "climate change AND country_placeholder"'};   
-                                      
+              
+%{
 folder_name_to_store_results = 'nutrients_AND_climate_change_SCOPUS';                
 main_keyword_searchengine_raw_multiple =[
                                         'DOCTYPE(ar) AND ',...
@@ -20,32 +18,43 @@ main_keyword_searchengine_raw_multiple =[
                                         %' AND TITLE-ABS(country_placeholder)'...
                                         ];
                                       
+%}
+   
+%{
+folder_name_to_store_results = 'groundwater_AND_climate_change_TITLE_SCOPUS';                
+main_keyword_searchengine_raw_multiple =[
+                                        'DOCTYPE(ar) AND ',...
+                                        ...%{'TITLE-ABS(',...
+                                        'TITLE(',...
+                                        '("climate change" OR "global warming")',...
+                                        ' AND (*groundwater* OR *aquifer* OR *subsurface* OR *underground*)',...
+                                        ' AND ("Great Lakes" OR "Lake Superior" OR "Lake Michigan" OR "Lake Huron" OR "Lake Erie" OR "Lake Ontario")',...
+                                        ' AND NOT ("Environment and Climate Change Canada"))',...
+                                        ...%' AND TITLE-ABS(country_placeholder)'...
+                                        ];
 
-%folder_name_to_store_results = 'nitrogen_AND_climate_change';
-%main_keyword_searchengine_raw_multiple = {'"nitrogen" AND "climate change"'
-                                          %'permafrost AND Canada';...
-                                          %'permafrost AND (chemistry OR biogeochemistry OR geochemistry)';...
-                                          %'permafrost AND Canada AND (chemistry OR biogeochemistry OR geochemistry)'
-%                                          };   
-                                      
-%folder_name_to_store_results = 'great_lakes_AND_climate_change';
-%main_keyword_searchengine_raw_multiple = {'"great lakes" AND "climate change"'
-%                                          };     
+%}
 
-%folder_name_to_store_results = 'permafrost_AND_climate_change';
-%main_keyword_searchengine_raw_multiple = {'"permafrost" AND "climate change"'
-
- %                                         };     
-     
+folder_name_to_store_results = 'groundwater_AND_climate_change_TITLE-ABS-KEY_SCOPUS';                
+main_keyword_searchengine_raw_multiple =[
+                                        'DOCTYPE(ar) AND ',...
+                                        ...%{'TITLE-ABS(',...
+                                        'TITLE-ABS-KEY(',...
+                                        '("climate change" OR "global warming")',...
+                                        ' AND (*groundwater* OR *aquifer* OR *subsurface* OR *underground*)',...
+                                        ' AND ("Great Lakes" OR "Lake Superior" OR "Lake Michigan" OR "Lake Huron" OR "Lake Erie" OR "Lake Ontario")',...
+                                        ' AND NOT ("Environment and Climate Change Canada"))',...
+                                        ...%' AND TITLE-ABS(country_placeholder)'...
+                                        ];     
 
 
 %% TOOLS
 
 % STEP 1
-RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to Science-Direct server
+RetrieveListPapers_STEP_1_flag = true;  % carefull -> it will send requests to Science-Direct server
 
 % STEP 2                                  
-RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
+RequestPapersFromList_STEP_2_flag = true; % carefull -> it will send requests to Science-Direct server
 
 % STEP 3
 ExtractInfoFromPapers_STEP_3_flag = true; 
