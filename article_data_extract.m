@@ -243,7 +243,7 @@ function metadata = extrBetween_DB_ELSEVIER(html_data,url_link)
             if strfind(abstract_cut{:},'</p></div></div><div')
                 abstract_cut = extractBefore(abstract_cut,'</p></div></div><div');
             end
-            temp = abstract_cut{:}
+            temp = abstract_cut{:};
             loc = strfind(temp,'">');
             abstract_cut = temp(loc(end)+2:end);
             abstract = {abstract_cut};
@@ -409,6 +409,14 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         metadata_i.(genvarname(struct_fields{index})) =  {year};
     end 
     
+    % 3) Journal name
+    index = 3;
+    if (iscell(metadata_i.(genvarname(struct_fields{index}))) &&...
+            numel(metadata_i.(genvarname(struct_fields{index})))>1)
+        journal_name = metadata_i.(genvarname(struct_fields{index})){1};
+        metadata_i.(genvarname(struct_fields{index})) = journal_name;
+    end
+    
      % Abstract
     index = 7;
     if ~strcmp(metadata_i.(genvarname(struct_fields{index})),NOT_FOUND_text)
@@ -436,6 +444,8 @@ function  metadata = extrBetween_DB_SPRINGER(html_paper,url_link)
         for i = 2:numel(authors)
             authors_all = [authors_all,', ',authors{i}]; 
         end
+    else
+        authors_all = '';
     end
     metadata_i.(genvarname(struct_fields{index})) = authors_all;
     

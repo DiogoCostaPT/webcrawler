@@ -28,6 +28,7 @@ for p = 1:numel(foldernames)
          intervals4easchsearch = find(~cellfun(@isempty,table2cell(metadata_all_list_table(:,1))));
          allyears = metadata_all_list_table.Year;
          allyears(strcmp(allyears,'-')) = {9999};
+         allyears(strcmp(allyears,'not found')) = {-9999};
          allyears = [allyears{:}]';
          index_order = [];
          if numel(intervals4easchsearch) > 1 % whith country analysis

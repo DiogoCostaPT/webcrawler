@@ -6,16 +6,25 @@ set(h,'Position', [500 300 280 70]);
 
 for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
-    foldernames = dir(dir4search);  
-    foldernames = {foldernames.name};
+    foldernames_raw = dir(dir4search);  
+    foldernames = {foldernames_raw.name};
     foldernames(strcmp(foldernames,'.')) = [];
     foldernames(strcmp(foldernames,'..')) = [];
-
+    
+    % Remove files from list
+    isfolder_all = [];
+    for i = 1:numel(foldernames)
+        isfolder_i = isdir([dir4search,'/',foldernames{i}]);
+        isfolder_all = [isfolder_all,isfolder_i];
+    end
+    foldernames = foldernames(find(isfolder_all == 1));
+    
         try
-           csvfile = [dir4search,'/',foldernames{k},'/metadata_all_list.csv'];
-           metadata_all_list_table = readtable(csvfile,'delimiter','bar');
+           matfile = [dir4search,'/',foldernames{k},'/metadata_all_list.mat'];
+           %metadata_all_list_table = readtable(csvfile,'delimiter','bar');
+           load(matfile);
         catch
-           disp(['WARNING: ',csvfile,' file not found -> need to run first the extract_papers_info function'])
+           disp(['WARNING: ',matfile,' file not found -> need to run first the extract_papers_info function'])
            return
         end
 
@@ -36,10 +45,16 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         %end
 
         % Year
-        year_data = str2double(metadata_all_list_table.Year);
+        year_data = metadata_all_list_table.Year;
+        year_data(strcmp(year_data,'-')) = [];
+        year_data(strcmp(year_data,'not found')) = [];
+        year_data = [year_data{:}];    
+        year_data(year_data == 9999) = [];
+        year_data(year_data == -9999) = [];
+        year_data(isnan(year_data)) = [];
         year_data_unique = unique(year_data);
-        year_data_unique(year_data_unique == 9999) = [];
-        year_data_unique(isnan(year_data_unique)) = [];
+        
+        
         figure
         hist(year_data,numel(year_data_unique));
         h1 = findobj(gca,'Type','patch');
@@ -89,6 +104,18 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         
         tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
         tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
+        % filtering bad results
+        remove_row = [];
+        for r = 1:numel(tabl1(:,1))
+            try
+               tabl1_i = tabl1(r,:);
+               if (contains(tabl1_i.Var1,char(10)) || numel(tabl1_i.Var1) > 50)
+                   remove_row = [remove_row,r];
+               end
+            catch
+            end
+        end
+        tabl1(remove_row,:) = [];
         figure
         wordcloud(tabl1,'Var1','a_counts')
         title(['Keywords (Search words: ',dir4search(8:end),')']);
