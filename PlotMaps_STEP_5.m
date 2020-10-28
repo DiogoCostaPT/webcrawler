@@ -3,12 +3,13 @@
 
 function PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple)
 
-   foldernames = dir(dir4search);  
+
+    foldernames = dir(dir4search); 
+    dirFlags = [foldernames.isdir];
+    foldernames = foldernames(dirFlags);
     foldernames = {foldernames.name};
     foldernames(strcmp(foldernames,'.')) = [];
     foldernames(strcmp(foldernames,'..')) = [];
-    foldernames_firstgeneral = foldernames{1};
-    
     %try
         %matfile = ['metadata_all_',main_keyword_searchengine_raw_multiple{1},'_by_country.mat'];
         %load(matfile);
@@ -45,11 +46,28 @@ function PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple)
         
         if ~isempty(countname) && ~isempty(iloc)
             
-            load([dir4search,'/',foldernames{s},'/metadata_this_folder.mat']); 
+            try
+                matmetadata_file = [dir4search,'/metadata_all_list.mat'];
+                load(matmetadata_file);
+                %metadata_all_list_table = readtable(matmetadatafile,'delimiter',';');
+            catch
+                disp(['WARNING: ',matmetadata_file,' file not found -> need to run first the extract_papers_info function'])
+                return;
+            end
+
+            intervals4easchsearch = find(~cellfun(@isempty,table2cell(metadata_all_list_table(:,1))));
             
-            countname_found = [countname_found,countname];
+            iloc_country = find(contains([metadata_all_list_table{intervals4easchsearch,1}],db_name_i)==1);
             
-            metadata_i = add_new_dataset_to_print;
+            
+            %countname_found = [countname_found,countname];
+            
+            if s ~= numel(foldernames)
+                metadata_i = metadata_all_list_table(intervals4easchsearch(iloc_country)+1:intervals4easchsearch(iloc_country+1),:);
+            else
+                metadata_i = metadata_all_list_table(intervals4easchsearch(iloc_country)+1:end,:);
+            end
+            
             
             % Coordinats
             lat_i = latlon_cell{iloc,2};
@@ -59,7 +77,7 @@ function PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple)
             numpaper = numel(metadata_i(:,1));
             
             % Keywords (find main key words for all countries)
-            keywords_all = {metadata_i{:,6}};
+            keywords_all = {metadata_i{:,7}};
             keywords_all_clean = split_entries(keywords_all,',');
             [C,ia,ic] = unique(keywords_all_clean);
             if isempty(C)
@@ -89,6 +107,8 @@ function PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple)
     %title('Number of papers')
     
     % PLOT MAP with main keywords 
+    
+    %{
     %% Keywords (most popular) all together
     remove_searchwords = erase(main_keyword_searchengine_raw_multiple{1},'"');
     remove_searchwords = split(remove_searchwords,' AND ');
@@ -99,9 +119,9 @@ function PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple)
     end
       keywords_popular_proc2 = {};
     
-    % remove names of countried from keywords
+    % remove names of countries from keywords
     countname_found = {};
-    for w=1:numel(keywords_popular_proc1(:,1))     
+    for w=1:numel(keywords_popular(:,1))     
         iloc = find(contains(lower(countname_found),keywords_popular_proc1(w,1))==1);  
         if isempty(iloc)
             new_entry_cnddt = keywords_popular_proc1(w,:);
@@ -121,7 +141,9 @@ function PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple)
             end
         end
     end
+    %}
     
+    keywords_popular_proc2 = keywords_popular;
     % sorting and taken most popular words - for all countries (setp 2) 
     [a_counts_sort,a_counts_index] = sort([keywords_popular_proc2{:,2}]','descend');
     C_sort = keywords_popular_proc2(a_counts_index,:);

@@ -7,6 +7,7 @@ keywords_all_clean = {};
  h = waitbar(0,'Inspecting-Cleaning keyword entries...');
 for i=1:numel(keywords_all)
     list_i = deblank(keywords_all{i}); % removes trailing whitespace and null characters
+    list_i = [list_i{:}];
     loc_new_keyword = strfind(list_i,delimiter);
     
     if loc_new_keyword > 0

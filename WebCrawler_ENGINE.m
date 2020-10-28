@@ -77,8 +77,13 @@ end
 %%
 if PlotMaps_STEP_5_flag
     
+    if(by_country)
+    
     PlotMaps_STEP_5(dir4search,...
         main_keyword_searchengine_raw_multiple);
+    else
+        disp('> Not a country-by-country analysis: PlotMaps_STEP_5 cannot be run')
+    end
    
 end
 

@@ -104,10 +104,10 @@ filter_papers_keywords = {}; % if don't want to
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
 % STEP 5
-PlotMaps_STEP_5_flag = false;
+PlotMaps_STEP_5_flag = true;
 
 % STEP 6
-GenerateReport_STEP_6_flag = true;
+GenerateReport_STEP_6_flag = false;
 only_title_and_highlights = false;
 
 
