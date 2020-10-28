@@ -37,9 +37,9 @@ function PlotMaps_STEP_5(dir4search,main_keyword_searchengine_raw_multiple)
         db_name_i = foldernames{s};
         
         countname = db_name_i;
-        countname = strrep(countname,foldernames_firstgeneral,'');
-        countname = strrep(countname,'%20AND%20','');
-        countname = strrep(countname,'%20',' ');
+        %countname = strrep(countname,foldernames_firstgeneral,'');
+        %countname = strrep(countname,'%20AND%20','');
+        %countname = strrep(countname,'%20',' ');
                 
         iloc = find(contains(latlon_cell(:,1),countname)==1);
         

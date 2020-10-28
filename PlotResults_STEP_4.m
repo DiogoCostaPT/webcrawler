@@ -20,7 +20,7 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
     foldernames = foldernames(find(isfolder_all == 1));
     
         try
-           matfile = [dir4search,'/',foldernames{k},'/metadata_all_list.mat'];
+           matfile = [dir4search,'/metadata_all_list.mat'];
            %metadata_all_list_table = readtable(csvfile,'delimiter','bar');
            load(matfile);
         catch

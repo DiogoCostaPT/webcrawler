@@ -88,7 +88,11 @@ metadata_all_list = {};
                 add_new_dataset_to_print = add_new_dataset(:,2:end);
                 save([dir4search,'/',foldernames{k},'/metadata_this_folder',addwordi,'.mat'],'add_new_dataset_to_print'); 
             end
-
+    
+        end
+    end
+    close(h)
+    
     %save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list'); 
     metadata_all_list_table = cell2table(metadata_all_list);
     metadata_all_list_table.Properties.VariableNames = {'Search_Keys',...
@@ -104,8 +108,4 @@ metadata_all_list = {};
                                                         };
     
     %metadata_all_list_table = strrep(metadata_all_list_table,'|','');                                                
-    save([dir4search,'/',foldernames{k},'/metadata_all_list',addwordi,'.mat'],'metadata_all_list_table'); 
-    
-        end
-    end
-    close(h)
+    save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list_table'); 
