@@ -94,7 +94,7 @@ RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to 
 RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
 
 % STEP 3
-ExtractInfoFromPapers_STEP_3_flag = true; 
+ExtractInfoFromPapers_STEP_3_flag = false; 
 force_overwrite = true;
 
 % STEP 4true

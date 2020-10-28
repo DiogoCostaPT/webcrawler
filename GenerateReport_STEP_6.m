@@ -11,6 +11,9 @@ foldernames = {foldernames.name};
 foldernames(strcmp(foldernames,'.')) = [];
 foldernames(strcmp(foldernames,'..')) = [];
 
+countries_list = listing_countries(); 
+
+
 %for p = 1:numel(foldernames)
 
  try
@@ -84,10 +87,15 @@ foldernames(strcmp(foldernames,'..')) = [];
              %end
 
              add_row = add_row + 1;
+             
+             % look fort search key
+             Search_key_general = paper_table_i.Search_Keys;
+             iloc_search = find(contains(main_keyword_searchengine_raw_multiple,Search_key_general)==1);
+             
 
              fprintf(fid, '%s\n', '===================================================================================');
              %print_searchwords = strrep(char(paper_table_i.Search_Keys),'%20',' ');
-             fprintf(fid, '%s\n\t', ['---->	SEARCH WORDS -> ',main_keyword_searchengine_raw_multiple{add_row}]);
+             fprintf(fid, '%s\n\t', ['---->	SEARCH WORDS -> ',main_keyword_searchengine_raw_multiple{iloc_search}]);
              if only_title_and_highlights
                  fprintf(fid, '%s\n\t', 'Simplified report: only title and highlights');
              end
@@ -153,7 +161,7 @@ foldernames(strcmp(foldernames,'..')) = [];
 
             % Print search words
             fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
-            fprintf(fid, '%s\n\n', ['SEARCH WORDS: ', main_keyword_searchengine_raw_multiple{add_row}]);
+            fprintf(fid, '%s\n\n', ['SEARCH WORDS: ', main_keyword_searchengine_raw_multiple{iloc_search}]);
             fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
             fprintf(fid, '%s\n', ['# item: ', num2str(itemnum_local)]);
             fprintf(fid, '%s\n', ['# web-crawler trace item (metadata_i, STEP 3): row ', num2str(item_metadata_i)]);
