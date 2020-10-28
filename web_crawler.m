@@ -22,8 +22,8 @@ main_keyword_searchengine_raw_multiple =[
 
 
 % Second run: Nutrients and climate change review paper
-folder_name_to_store_results = 'nutrients_AND_climate_change_SCOPUS_3';      
-%folder_name_to_store_results = 'nutrients_AND_climate_change_by_country_SCOPUS_3';
+%folder_name_to_store_results = 'nutrients_AND_climate_change_SCOPUS_3';      
+folder_name_to_store_results = 'nutrients_AND_climate_change_by_country_SCOPUS_3';
 main_keyword_searchengine_raw_multiple =[...
                                     'DOCTYPE(ar)',...
                                     ' AND TITLE(',...
@@ -39,7 +39,7 @@ main_keyword_searchengine_raw_multiple =[...
                                         ')',...
                                     ')',...
                                     ' AND TITLE-ABS-KEY(',...
-                                       ...'country_placeholder',...
+                                       'country_placeholder',...
                                         ' AND NOT (',...
                                         ...    '(river* OR lake* OR wetland OR stream* OR basin* OR watershed* OR runoff OR "run-off" OR reservoir)',... 
                                         ...    ' AND NOT ("greenhouse gas*" OR methane OR "carbon dioxide" OR "CO<sub>2</sub>" OR "CH<sub>4</sub>")',... 
@@ -94,11 +94,11 @@ RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to 
 RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
 
 % STEP 3
-ExtractInfoFromPapers_STEP_3_flag = false; 
+ExtractInfoFromPapers_STEP_3_flag = true; 
 force_overwrite = true;
 
-% STEP 4
-PlotResults_STEP_4_flag = true; %1) # papers and keywords
+% STEP 4true
+PlotResults_STEP_4_flag = false; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
@@ -107,7 +107,7 @@ filter_papers_keywords = {}; % if don't want to
 PlotMaps_STEP_5_flag = false;
 
 % STEP 6
-GenerateReport_STEP_6_flag = false;
+GenerateReport_STEP_6_flag = true;
 only_title_and_highlights = false;
 
 

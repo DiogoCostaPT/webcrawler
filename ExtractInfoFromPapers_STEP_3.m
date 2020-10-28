@@ -24,13 +24,13 @@ metadata_all_list = {};
     %folderpapers = ['papers/',main_keyword_searchengine];
 
 
-    if by_country
-        addwordi = '_by_cou0ntry';
-    else
-        addwordi = '';
-    end
+   % if by_country
+   %     addwordi = '_by_cou0ntry';
+   % else
+   %     addwordi = '';
+   % end
     try
-       matfile = [dir4search,'/',foldernames{k},'/metadata_this_folder',addwordi,'.mat'];
+       matfile = [dir4search,'/metadata_all_list.mat'];
        load(matfile);
        %extract_papers_info = 0; % no need to extract again
        if force_overwrite == 0
@@ -85,8 +85,8 @@ metadata_all_list = {};
             if ~isempty(metadata)
                 add_new_dataset = [cell(numel(metadata(:,1)),1),metadata];
                 metadata_all_list = [metadata_all_list;add_new_dataset];
-                add_new_dataset_to_print = add_new_dataset(:,2:end);
-                save([dir4search,'/',foldernames{k},'/metadata_this_folder',addwordi,'.mat'],'add_new_dataset_to_print'); 
+                %add_new_dataset_to_print = add_new_dataset(:,2:end);
+                %save([dir4search,'/',foldernames{k},'/metadata_this_folder',addwordi,'.mat'],'add_new_dataset_to_print'); 
             end
     
         end
@@ -108,4 +108,4 @@ metadata_all_list = {};
                                                         };
     
     %metadata_all_list_table = strrep(metadata_all_list_table,'|','');                                                
-    save([dir4search,'/metadata_all_list',addwordi,'.mat'],'metadata_all_list_table'); 
+    save([dir4search,'/metadata_all_list.mat'],'metadata_all_list_table'); 
