@@ -93,18 +93,18 @@ RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to 
 % STEP 2                                  
 RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
 
-% STEP 3
+% STEP 3true
 ExtractInfoFromPapers_STEP_3_flag = false; 
 force_overwrite = true;
 
 % STEP 4true
-PlotResults_STEP_4_flag = false; %1) # papers and keywords
+PlotResults_STEP_4_flag = true; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
 % STEP 5
-PlotMaps_STEP_5_flag = true;
+PlotMaps_STEP_5_flag = false;
 
 % STEP 6
 GenerateReport_STEP_6_flag = false;
