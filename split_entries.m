@@ -7,7 +7,10 @@ keywords_all_clean = {};
  h = waitbar(0,'Inspecting-Cleaning keyword entries...');
 for i=1:numel(keywords_all)
     list_i = deblank(keywords_all{i}); % removes trailing whitespace and null characters
-    %list_i = [list_i{:}];
+    try
+        list_i = [list_i{:}];
+    catch
+    end
     
     if (strcmp(list_i,'-'))
         continue;
