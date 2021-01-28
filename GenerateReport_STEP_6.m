@@ -62,7 +62,8 @@ countries_list = listing_countries();
 
      add_row = 0;
      
-     fid=fopen([dir4search,'/WebCrawlet_Report_',folder_name_to_store_results,add_text,'.docx'],'w');
+     fid=fopen([dir4search,'/WebCrawler_Report_',folder_name_to_store_results,add_text,'.docx'],'w');
+     iloc_search = 1;
      
      for r=1:numel(metadata_all_list_table(:,1))
          try
@@ -70,7 +71,7 @@ countries_list = listing_countries();
          catch
              continue
          end  
-
+        
         paper_table_i = metadata_all_list_table(i,:);
 
         if ~isempty(paper_table_i.Search_Keys{:})
@@ -92,6 +93,9 @@ countries_list = listing_countries();
              Search_key_general = paper_table_i.Search_Keys;
              iloc_search = find(contains(main_keyword_searchengine_raw_multiple,Search_key_general)==1);
              
+             if isempty(iloc_search) % General case (not country by country)
+                 iloc_search = 1;
+             end
 
              fprintf(fid, '%s\n', '===================================================================================');
              %print_searchwords = strrep(char(paper_table_i.Search_Keys),'%20',' ');
@@ -109,6 +113,14 @@ countries_list = listing_countries();
 
             itemnum_global = itemnum_global + 1;
             itemnum_local = itemnum_local + 1;
+            
+            try
+                if isempty(find(remove_array == itemnum_global, 1))
+                   continue;
+                end
+            catch
+                disp('No remove_array included: all papers were included')
+            end
 
             % Paper type, title and year
             fprintf(fid, '%s\n','%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
@@ -125,7 +137,6 @@ countries_list = listing_countries();
             fprintf(fid, '%s\n', 'Highlights: ');
 
             % add highlights
-
              writetext = char(metadata_all_list_table{i,9});
              writetext = strtrim(writetext);
              if ~isempty(writetext)
@@ -153,6 +164,12 @@ countries_list = listing_countries();
                 fprintf(fid, '%s\n','');
             end
 
+            % add keywords
+            fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
+            fprintf(fid, '%s\n', 'KEYWORDS: ');
+            writetext = char(metadata_all_list_table{i,7});
+            fprintf(fid, '%s\n', [writetext,' ']);
+            
             % add url
             fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
             fprintf(fid, '%s\n', 'URL: ');
