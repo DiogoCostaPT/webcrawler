@@ -115,7 +115,7 @@ countries_list = listing_countries();
             itemnum_local = itemnum_local + 1;
             
             try
-                if isempty(find(remove_array == itemnum_global, 1))
+                if ~isempty(find(remove_array == itemnum_global, 1))
                    continue;
                 end
             catch
@@ -127,11 +127,14 @@ countries_list = listing_countries();
             fprintf(fid, '%s\n',['ITEM_',num2str(itemnum_global)]);
             fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
             writetext = ['Publication/article type: ',upper(paper_table_i.Type_of_Publication{:}),' (Year: ',num2str(paper_table_i.Year{:}),')'];
+            try writetext = writetext{:}; catch; end
             fprintf(fid, '%s\n\n', writetext);
             writetext = paper_table_i.Paper_title{:};
+            try writetext = writetext{:}; catch; end
             fprintf(fid, '%s\n\n', writetext);
             fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
             writetext = ['Authors: ',paper_table_i.Authors{:}];
+            try writetext = writetext{:}; catch; end
             fprintf(fid, '%s\n', writetext);
             fprintf(fid, '%s\n','-----------------------------------------------------------------------------------');
             fprintf(fid, '%s\n', 'Highlights: ');
