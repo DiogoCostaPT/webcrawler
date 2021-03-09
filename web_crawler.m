@@ -147,7 +147,7 @@ ExtractInfoFromPapers_STEP_3_flag = false;
 force_overwrite = true;
  
 % STEP 4
-PlotResults_STEP_4_flag = true; %1) # papers and keywords
+PlotResults_STEP_4_flag = false; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to 
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
