@@ -1,6 +1,8 @@
 
 % To Remove from Nutrients and Climate Change
 
+%{
+% Removed papers from: nutrients_AND_climate_change_SCOPUS_3
 maybe_remove_general = [3, 6, 10, 14, 15, 27, 37, 38, 54, 55, 63, 68,17, 26,...
     24, 49, 55, 61, 154, 174, 251, 253, 254, 255,257, 260, 261, 267, 268,274,...
     275, 276, 278, 281, 283, 286, 294,296, 302,304, 306, 309, 310,314, 315, 316,...
@@ -27,7 +29,19 @@ sure_remove_general = [17, 26, 24, 49, 55, 61,68,74 ,77,79,80,81,91,95,97,98,99,
     282, 285,286, 291,293, 294,296,297,298, 301,302,311, 315,317,319,321,...
     322,329,332, 349, 356, 358, 359, 367, 368, 381,398, 399, 400, 401, 407,...
     409, 410, 412, 418, 419, 420, 421, 429, 433, 434, 436, 437, 438, 441, 444];
+%}
 
+%{
+% Removed papers from: permafrost_AND_climate_change_TITLE-ABS-KEY_SCOPUS_3
+maybe_remove_general = [2, 20, 26, 15, 28, 49, 30, 48, 73, 80, 85, 9, 113, 115, 127, 129, 125, 126];
+sure_remove_general = [6, 7, 25, 27, 33, 36, 37, 44, 51, 29, 41, 31, 43, 47, 32, 35, 38, 39, 45, 46,...
+    40, 56, 58, 60, 64, 65, 68, 69, 71, 72, 75, 77, 84, 88, 89, 90, 93, 99, 100, 101, 105, 121, 107,...
+    128, 110, 119, 123, 122];
+%}
+
+% Removed papers from: permafrost_AND_hydrology_words_TITLE_4
+maybe_remove_general = [52, 53, 55, 65, 66, 92, 94, 98];
+sure_remove_general = [6, 8, 14, 27, 28, 37, 25, 30, 31, 43, 45, 47, 48, 51, 54, 56, 57, 58, 59, 62, 69, 72, 75, 77, 78, 80, 81, 90, 91, 96];
 
 %% NUTRIENTS AND CLIMATE CHANGE REPORT            
 %{
@@ -83,7 +97,8 @@ main_keyword_searchengine_raw_multiple =[...
                                         ];
 %}
 
-% Permafrost
+%{
+% Permafrost 1
 folder_name_to_store_results = 'permafrost_AND_climate_change_TITLE-ABS-KEY_SCOPUS';                
 main_keyword_searchengine_raw_multiple =[...
                                     'DOCTYPE(ar)',...
@@ -237,18 +252,21 @@ only_title_and_highlights = false;
 
 % additional settings
 num_search_pages = 200;
-pausetime = 10; % in seconds -> CAREFULL, DON'T PUT THIS LOWER THAN 10
-
 
 % provide API key
 myScopusApiKey_file = 'myScopusApiKey_file.txt'
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% call WebCrawler_ENGINE
-myScopusApiKey = '3291a872bc42269b1594b782de7524c3';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+myScopusApiKey = importdata(myScopusApiKey_file);
 
 show = 25; % this is the max of # of results that the scupos API allows (will return error if increased)
-
+pausetime = 10; % in seconds -> CAREFULL, DON'T PUT THIS LOWER THAN 10
 
 WebCrawler_ENGINE(folder_name_to_store_results,...
                 main_keyword_searchengine_raw_multiple,...
