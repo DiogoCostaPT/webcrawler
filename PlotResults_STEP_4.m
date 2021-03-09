@@ -65,6 +65,17 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
 
         % Journal  
         journals_all = metadata_all_list_table.Journal_name;
+        try
+            %journals_all = [journals_all{:}]';
+        catch
+        end
+        remove_ii = [];
+        for w = 1:numel(journals_all)
+            if numel(journals_all{w})>70
+                remove_ii = [remove_ii,w];
+            end
+        end
+        journals_all(remove_ii) = [];
         [journal_list,ia,ic] = unique(journals_all);
         a_counts = accumarray(ic,1);
         tabl1 = table(journal_list,a_counts);
@@ -89,6 +100,7 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
         % Keywords
         keywords_all = metadata_all_list_table.Keywords;
         keywords_all_clean = split_entries(keywords_all,',');
+        keywords_all_clean = lower(keywords_all_clean);
         [C,ia,ic] = unique(keywords_all_clean);
         a_counts = accumarray(ic,1);
         tabl1 = table(C',a_counts);
@@ -102,14 +114,16 @@ for k = 1:numel(main_keyword_searchengine_raw_multiple)
             tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, seach_words_cell_i)), :);
         end
         
-        tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
+        %tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'permafrost')), :);
         tabl1 = tabl1(cellfun(@isempty, strfind(tabl1.Var1, 'Permafrost')), :);
         % filtering bad results
         remove_row = [];
         for r = 1:numel(tabl1(:,1))
             try
                tabl1_i = tabl1(r,:);
-               if (contains(tabl1_i.Var1,char(10)) || numel(tabl1_i.Var1) > 50)
+               if (contains(tabl1_i.Var1,char(10)) ||...
+                       numel(tabl1_i.Var1{:}) > 50 ||...
+                       numel(tabl1_i.Var1{:}) < 4)
                    remove_row = [remove_row,r];
                end
             catch
