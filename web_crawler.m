@@ -165,6 +165,7 @@ main_keyword_searchengine_raw_multiple =[...
 %}
                                     
 % Permafrost 4
+%{
 folder_name_to_store_results = 'permafrost_AND_hydrology_words_TITLE_4';                
 main_keyword_searchengine_raw_multiple =[...
                                      'DOCTYPE(ar)',...
@@ -189,6 +190,7 @@ main_keyword_searchengine_raw_multiple =[...
                                        ' AND NOT SRCTITLE(Antartic Science)',...
                                        ' AND LANGUAGE(english)',...
                                         ];
+%}
 
                                     
 %% GW AND CC REPORT
@@ -219,8 +221,17 @@ main_keyword_searchengine_raw_multiple =[
                                         ' AND NOT ("Environment and Climate Change Canada"))',...
                                         ...%' AND TITLE-ABS(country_placeholder)'...
                                         ];     
-%}
+%}                                    
 
+folder_name_to_store_results = 'groundwater_AND_climate_change_TITLE-ABS-KEY_SCOPUS_v2';                
+main_keyword_searchengine_raw_multiple =[
+                                        'DOCTYPE(ar) AND ',...
+                                        ...%{'TITLE-ABS(',...
+                                        'TITLE-ABS-KEY(',...
+                                        '("climate change" OR "global warming")',...
+                                        ' AND ("Great Lakes" OR "Lake Superior" OR "Lake Michigan" OR "Lake Huron" OR "Lake Erie" OR "Lake Ontario"))',...
+                                        ...%' AND TITLE-ABS(country_placeholder)'...
+                                        ];  
 
 
                                     
@@ -238,7 +249,7 @@ force_overwrite = true;
  
 % STEP 4
 PlotResults_STEP_4_flag = false; %1) # papers and keywords
-filter_papers_keywords = {}; % if don't want to 
+filter_papers_keywords = {}; % if don't want to dLASE
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
 
@@ -246,7 +257,7 @@ filter_papers_keywords = {}; % if don't want to
 PlotMaps_STEP_5_flag = false;
 
 % STEP 6
-GenerateReport_STEP_6_flag = true;
+GenerateReport_STEP_6_flag = false;
 only_title_and_highlights = false;
 
 
