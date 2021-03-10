@@ -254,7 +254,7 @@ only_title_and_highlights = false;
 num_search_pages = 200;
 
 % provide API key
-myScopusApiKey_file = 'myScopusApiKey_file.txt'
+myScopusApiKey_file = 'myScopusApiKey_file.txt';
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -264,6 +264,7 @@ myScopusApiKey_file = 'myScopusApiKey_file.txt'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 myScopusApiKey = importdata(myScopusApiKey_file);
+myScopusApiKey = myScopusApiKey{:};
 
 show = 25; % this is the max of # of results that the scupos API allows (will return error if increased)
 pausetime = 10; % in seconds -> CAREFULL, DON'T PUT THIS LOWER THAN 10
