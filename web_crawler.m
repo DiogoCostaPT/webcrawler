@@ -1,4 +1,23 @@
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copyright 2021, Diogo Costa, diogo.pinhodacosta@canada.ca
+% This file is part of WebCrawler tool.
+
+% This program, WebCrawler tool, is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) later version.
+
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 % To Remove from Nutrients and Climate Change
 
 %{
@@ -209,7 +228,7 @@ main_keyword_searchengine_raw_multiple =[
 
 %}
 
-%{
+
 folder_name_to_store_results = 'groundwater_AND_climate_change_TITLE-ABS-KEY_SCOPUS';                
 main_keyword_searchengine_raw_multiple =[
                                         'DOCTYPE(ar) AND ',...
@@ -221,8 +240,8 @@ main_keyword_searchengine_raw_multiple =[
                                         ' AND NOT ("Environment and Climate Change Canada"))',...
                                         ...%' AND TITLE-ABS(country_placeholder)'...
                                         ];     
-%}                                    
-
+                                   
+%{
 folder_name_to_store_results = 'groundwater_AND_climate_change_TITLE-ABS-KEY_SCOPUS_v2';                
 main_keyword_searchengine_raw_multiple =[
                                         'DOCTYPE(ar) AND ',...
@@ -233,12 +252,12 @@ main_keyword_searchengine_raw_multiple =[
                                         ...%' AND TITLE-ABS(country_placeholder)'...
                                         ];  
 
-
+%} 
                                     
 %% TOOLS
 
 % STEP 1
-RetrieveListPapers_STEP_1_flag = true;  % carefull -> it will send requests to Science-Direct server
+RetrieveListPapers_STEP_1_flag = false;  % carefull -> it will send requests to Science-Direct server
 
 % STEP 2                                  
 RequestPapersFromList_STEP_2_flag = false; % carefull -> it will send requests to Science-Direct server
@@ -248,7 +267,7 @@ ExtractInfoFromPapers_STEP_3_flag = false;
 force_overwrite = true;
  
 % STEP 4
-PlotResults_STEP_4_flag = false; %1) # papers and keywords
+PlotResults_STEP_4_flag = true; %1) # papers and keywords
 filter_papers_keywords = {}; % if don't want to dLASE
 %filter_papers_keywords = {'biogeochemistry', 'geochemistry', 'chemistry', 'greenhouse', 'ion', 'anion',...
 %        'cation','methane','mercur1y','carbon','organic','CO<sub>2</sub>','CH<sub>4</sub>''hydrate','gas','radiocarbon','hydrocarbon'};
